@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Your Garden | Decision Garden</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <nav>
+      <div class="logo"><span>🌱</span> Decision Garden</div>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="features.html">Features</a></li>
+        <li><a href="garden.html" class="active">Garden</a></li>
+        <li><a href="about.html">About</a></li>
+      </ul>
+      <div class="theme-toggle"><div>🌙 Dark</div></div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page-hero small container fade-in">
+      <div>
+        <h1>Your Garden</h1>
+        <p>Choose the section to work in today.</p>
+      </div>
+      <div style="margin-left:auto"><span class="badge">Choose a bed</span></div>
+    </section>
+
+    <section class="garden-grid container">
+      <div class="garden-card fade-in delay-1" onclick="location.href='quick-tasks.html'">
+        <div class="emoji float">🌸</div>
+        <div>
+          <h3>Quick Tasks</h3>
+          <p>Small tasks you can finish fast.</p>
+        </div>
+      </div>
+      <div class="garden-card fade-in delay-2" onclick="location.href='projects.html'">
+        <div class="emoji float">🌳</div>
+        <div>
+          <h3>Projects</h3>
+          <p>Bigger tasks that take more time.</p>
+        </div>
+      </div>
+      <div class="garden-card fade-in delay-3" onclick="location.href='neglected.html'">
+        <div class="emoji float">🍂</div>
+        <div>
+          <h3>Neglected</h3>
+          <p>Tasks you’ve postponed. Time to revive them.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>🌱 Decision Garden © 2025</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

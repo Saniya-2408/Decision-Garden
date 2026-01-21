@@ -1,4 +1,4 @@
-# Decision-Garden
+# Decision Planner
 Intelligent Task Prioritization Planner
 
 o	Context-aware planner that recommends tasks based on energy, mood, and time, boosting productivity and focus.

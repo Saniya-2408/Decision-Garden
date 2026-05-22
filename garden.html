@@ -1,63 +1,718 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Your Garden | Decision Garden</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Garden — Decision Planner</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    body { background: #F4EFE4; }
+
+    .page-layout {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      min-height: calc(100vh - 64px);
+      gap: 0;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      background: white;
+      border-right: 1px solid rgba(139,107,74,0.1);
+      padding: 1.75rem 1.5rem;
+      overflow-y: auto;
+      position: sticky; top: 64px;
+      height: calc(100vh - 64px);
+    }
+
+    .sidebar__section { margin-bottom: 1.75rem; }
+    .sidebar__title {
+      font-size: 0.72rem; font-weight: 500;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--text-light); margin-bottom: 0.875rem;
+    }
+
+    /* Context sliders */
+    .context-bar {
+      background: var(--clr-parchment);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      margin-bottom: 1.25rem;
+    }
+    .context-label {
+      display: flex; justify-content: space-between;
+      align-items: center; margin-bottom: 0.6rem;
+      font-size: 0.875rem; font-weight: 500;
+    }
+    .context-val {
+      font-size: 0.8rem; color: var(--text-light);
+      background: white; padding: 0.2rem 0.6rem;
+      border-radius: var(--radius-pill);
+    }
+
+    /* Mood picker */
+    .mood-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 0.5rem;
+    }
+    .mood-btn {
+      aspect-ratio: 1;
+      border-radius: var(--radius-md);
+      border: 2px solid rgba(139,107,74,0.1);
+      background: white;
+      font-size: 1.4rem;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all var(--transition);
+    }
+    .mood-btn:hover { border-color: var(--clr-sage); transform: scale(1.06); }
+    .mood-btn.active { border-color: var(--clr-sage); background: var(--clr-sage-lt); }
+
+    /* Add task form */
+    .add-task-btn {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px dashed rgba(90,122,92,0.3);
+      border-radius: var(--radius-md);
+      background: transparent;
+      color: var(--clr-sage);
+      font-size: 0.9rem; font-weight: 500;
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+      cursor: pointer; transition: all 0.18s;
+    }
+    .add-task-btn:hover {
+      border-color: var(--clr-sage);
+      background: var(--clr-sage-lt);
+    }
+
+    /* ── Main Garden ── */
+    .garden-main { padding: 2rem; overflow: auto; }
+
+    .garden-toolbar {
+      display: flex; align-items: center; gap: 1rem;
+      margin-bottom: 1.75rem; flex-wrap: wrap;
+    }
+    .garden-title-area { flex: 1; }
+    .garden-title-area h1 {
+      font-size: 1.7rem; font-weight: 500;
+    }
+    .garden-title-area p { color: var(--text-muted); font-size: 0.875rem; }
+
+    .view-toggle {
+      display: flex; background: white;
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(139,107,74,0.12);
+      overflow: hidden;
+    }
+    .view-btn {
+      padding: 0.5rem 1rem; font-size: 0.85rem; font-weight: 500;
+      color: var(--text-muted); transition: all 0.18s; cursor: pointer;
+    }
+    .view-btn.active { background: var(--clr-sage); color: white; }
+
+    /* ── Garden Grid ── */
+    .garden-ground {
+      background: linear-gradient(180deg, #F0F7E8 0%, #E2F0D4 100%);
+      border-radius: var(--radius-xl);
+      padding: 2rem;
+      min-height: 420px;
+      position: relative;
+      overflow: hidden;
+      border: 1.5px solid rgba(90,122,92,0.15);
+    }
+
+    /* soil strip */
+    .garden-ground::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0; height: 60px;
+      background: linear-gradient(180deg, #C8985A 0%, #A0703A 100%);
+      border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+    }
+
+    .plant-row {
+      display: flex; gap: 1.5rem; justify-content: center;
+      position: relative; z-index: 1;
+    }
+
+    .plant-item {
+      display: flex; flex-direction: column; align-items: center;
+      cursor: pointer; transition: transform var(--transition);
+      position: relative;
+    }
+    .plant-item:hover { transform: scale(1.05) translateY(-4px); }
+
+    .plant-tooltip {
+      position: absolute; bottom: calc(100% + 10px);
+      background: white; border-radius: var(--radius-md);
+      box-shadow: var(--shadow-hover);
+      padding: 0.75rem 1rem;
+      width: 160px; left: 50%; transform: translateX(-50%);
+      font-size: 0.8rem;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.18s;
+      z-index: 10;
+    }
+    .plant-item:hover .plant-tooltip { opacity: 1; }
+
+    .plant-label {
+      font-size: 0.75rem; font-weight: 500;
+      margin-top: 0.5rem; text-align: center;
+      max-width: 80px;
+    }
+
+    /* Status badge on plants */
+    .plant-status {
+      position: absolute; top: -6px; right: -6px;
+      width: 18px; height: 18px; border-radius: 50%;
+      border: 2px solid white; font-size: 10px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── Suggestions Panel ── */
+    .suggestions-panel {
+      background: white;
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(139,107,74,0.1);
+      overflow: hidden;
+      margin-top: 1.5rem;
+    }
+    .panel-header {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid rgba(139,107,74,0.1);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .panel-header h3 { font-size: 1rem; font-weight: 500; }
+
+    .task-suggestion {
+      display: flex; align-items: center; gap: 1rem;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid rgba(139,107,74,0.06);
+      transition: background 0.15s; cursor: pointer;
+    }
+    .task-suggestion:last-child { border-bottom: none; }
+    .task-suggestion:hover { background: var(--clr-parchment); }
+
+    .task-suggestion__icon {
+      width: 40px; height: 40px; border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .task-suggestion__body { flex: 1; }
+    .task-suggestion__name { font-weight: 500; font-size: 0.9rem; }
+    .task-suggestion__meta { font-size: 0.78rem; color: var(--text-light); margin-top: 0.15rem; }
+    .task-suggestion__tags { display: flex; gap: 0.4rem; margin-top: 0.4rem; }
+    .task-suggestion__score {
+      font-family: var(--ff-display); font-size: 1.4rem; font-weight: 500;
+      color: var(--clr-sage);
+    }
+
+    /* ── Add Task Modal ── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(45,30,20,0.5);
+      backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.25s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: white; border-radius: var(--radius-xl);
+      padding: 2rem; width: min(540px, 90vw);
+      transform: translateY(20px) scale(0.97);
+      transition: transform 0.25s cubic-bezier(0.34,1.2,0.64,1);
+      box-shadow: 0 24px 80px rgba(45,30,20,0.2);
+    }
+    .modal-overlay.open .modal { transform: translateY(0) scale(1); }
+    .modal-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    .modal-header h2 { font-size: 1.3rem; font-weight: 500; }
+    .modal-close {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--clr-parchment); display: flex;
+      align-items: center; justify-content: center;
+      cursor: pointer; font-size: 1.1rem; color: var(--text-muted);
+      border: none; transition: background 0.18s;
+    }
+    .modal-close:hover { background: var(--clr-sage-lt); }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .modal-actions { display: flex; gap: 0.875rem; margin-top: 1.5rem; justify-content: flex-end; }
+
+    @media (max-width: 900px) {
+      .page-layout { grid-template-columns: 1fr; }
+      .sidebar {
+        position: static; height: auto;
+        border-right: none; border-bottom: 1px solid rgba(139,107,74,0.1);
+      }
+      .plant-row { flex-wrap: wrap; }
+      .form-row { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
-  <header>
-    <nav>
-      <div class="logo"><span>🌱</span> Decision Garden</div>
-      <ul>
+
+<!-- Navigation -->
+<nav class="nav">
+  <div class="container">
+    <div class="nav__inner">
+      <a href="index.html" class="nav__logo">
+        <div class="nav__logo-icon">🌿</div>
+        Decision Planner
+      </a>
+      <ul class="nav__links" id="navLinks">
         <li><a href="index.html">Home</a></li>
+        <li><a href="garden.html" class="active">My Garden</a></li>
+        <li><a href="quick-tasks.html">Quick Tasks</a></li>
+        <li><a href="projects.html">Projects</a></li>
         <li><a href="features.html">Features</a></li>
-        <li><a href="garden.html" class="active">Garden</a></li>
         <li><a href="about.html">About</a></li>
       </ul>
-      <div class="theme-toggle"><div>🌙 Dark</div></div>
-    </nav>
-  </header>
+      <a href="quick-tasks.html" class="nav__cta btn">Quick Tasks ⚡</a>
+      <button class="nav__hamburger" id="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
 
-  <main>
-    <section class="page-hero small container fade-in">
-      <div>
-        <h1>Your Garden</h1>
-        <p>Choose the section to work in today.</p>
+<div class="page-layout">
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <div class="sidebar__section">
+      <div class="sidebar__title">🌤 Today's Context</div>
+      <div class="context-bar">
+        <div class="context-label">
+          <span>⚡ Energy</span>
+          <span class="context-val" id="energyVal">High</span>
+        </div>
+        <input type="range" class="slider-track" min="1" max="3" value="3" id="energySlider" />
       </div>
-      <div style="margin-left:auto"><span class="badge">Choose a bed</span></div>
-    </section>
+      <div class="context-bar">
+        <div class="context-label">
+          <span>⏱ Available Time</span>
+          <span class="context-val" id="timeVal">3 hrs</span>
+        </div>
+        <input type="range" class="slider-track" min="1" max="8" value="3" id="timeSlider" />
+      </div>
+    </div>
 
-    <section class="garden-grid container">
-      <div class="garden-card fade-in delay-1" onclick="location.href='quick-tasks.html'">
-        <div class="emoji float">🌸</div>
-        <div>
-          <h3>Quick Tasks</h3>
-          <p>Small tasks you can finish fast.</p>
+    <div class="sidebar__section">
+      <div class="sidebar__title">😊 Mood</div>
+      <div class="mood-grid">
+        <button class="mood-btn active" data-mood="focused" title="Focused">🧠</button>
+        <button class="mood-btn" data-mood="creative" title="Creative">🎨</button>
+        <button class="mood-btn" data-mood="calm" title="Calm">🌊</button>
+        <button class="mood-btn" data-mood="energized" title="Energized">⚡</button>
+        <button class="mood-btn" data-mood="stressed" title="Stressed">😤</button>
+        <button class="mood-btn" data-mood="tired" title="Tired">😴</button>
+        <button class="mood-btn" data-mood="happy" title="Happy">😊</button>
+        <button class="mood-btn" data-mood="motivated" title="Motivated">🔥</button>
+      </div>
+    </div>
+
+    <div class="sidebar__section">
+      <div class="sidebar__title">🏷 Filter by Category</div>
+      <div class="chip-group" id="categoryFilters">
+        <div class="chip selected" data-cat="all">All</div>
+        <div class="chip" data-cat="work">Work</div>
+        <div class="chip" data-cat="personal">Personal</div>
+        <div class="chip" data-cat="creative">Creative</div>
+        <div class="chip" data-cat="health">Health</div>
+        <div class="chip" data-cat="learning">Learning</div>
+      </div>
+    </div>
+
+    <div class="sidebar__section">
+      <div class="sidebar__title">➕ Add to Garden</div>
+      <button class="add-task-btn" id="openModal">
+        <span style="font-size:1.2rem;">🌱</span>
+        Plant a new task
+      </button>
+    </div>
+
+    <div class="sidebar__section">
+      <div class="sidebar__title">📊 Garden Stats</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+        <div style="background:var(--clr-sage-lt); border-radius:var(--radius-md); padding:0.875rem; text-align:center;">
+          <div style="font-family:var(--ff-display); font-size:1.6rem; font-weight:500; color:var(--clr-sage-dk);" id="bloomCount">4</div>
+          <div style="font-size:0.72rem; color:var(--clr-sage);">Blooming</div>
+        </div>
+        <div style="background:var(--clr-amber-lt); border-radius:var(--radius-md); padding:0.875rem; text-align:center;">
+          <div style="font-family:var(--ff-display); font-size:1.6rem; font-weight:500; color:var(--clr-amber-dk);" id="growCount">5</div>
+          <div style="font-size:0.72rem; color:var(--clr-amber);">Growing</div>
+        </div>
+        <div style="background:var(--clr-sky-lt); border-radius:var(--radius-md); padding:0.875rem; text-align:center;">
+          <div style="font-family:var(--ff-display); font-size:1.6rem; font-weight:500; color:#2A7A99;" id="seedCount">3</div>
+          <div style="font-size:0.72rem; color:var(--clr-sky);">Seeds</div>
+        </div>
+        <div style="background:var(--clr-petal-lt); border-radius:var(--radius-md); padding:0.875rem; text-align:center;">
+          <div style="font-family:var(--ff-display); font-size:1.6rem; font-weight:500; color:var(--clr-rose);" id="wiltCount">2</div>
+          <div style="font-size:0.72rem; color:var(--clr-petal);">Wilting</div>
         </div>
       </div>
-      <div class="garden-card fade-in delay-2" onclick="location.href='projects.html'">
-        <div class="emoji float">🌳</div>
-        <div>
-          <h3>Projects</h3>
-          <p>Bigger tasks that take more time.</p>
-        </div>
+    </div>
+  </aside>
+
+  <!-- ── Main Garden ── -->
+  <main class="garden-main">
+    <div class="garden-toolbar">
+      <div class="garden-title-area">
+        <h1>🌸 My Garden</h1>
+        <p>Friday, May 16 · 14 tasks growing · You're on a 7-day streak! 🔥</p>
       </div>
-      <div class="garden-card fade-in delay-3" onclick="location.href='neglected.html'">
-        <div class="emoji float">🍂</div>
-        <div>
-          <h3>Neglected</h3>
-          <p>Tasks you’ve postponed. Time to revive them.</p>
-        </div>
+      <div class="view-toggle">
+        <button class="view-btn active" id="viewGarden">🌿 Garden</button>
+        <button class="view-btn" id="viewBoard">📋 Board</button>
       </div>
-    </section>
+      <a href="neglected.html" class="btn btn--secondary btn--sm">🥀 2 Wilting</a>
+    </div>
+
+    <!-- Garden Visualization -->
+    <div class="garden-ground" id="gardenGround">
+      <!-- Plants rendered by JS -->
+    </div>
+
+    <!-- Smart Suggestions -->
+    <div class="suggestions-panel">
+      <div class="panel-header">
+        <h3>✨ Suggested for your current state</h3>
+        <div class="tag tag--sage">High energy · Focused · 3 hrs</div>
+      </div>
+      <div id="suggestionsList"></div>
+    </div>
   </main>
+</div>
 
-  <footer>
-    <p>🌱 Decision Garden © 2025</p>
-  </footer>
+<!-- ── Add Task Modal ── -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>🌱 Plant a New Task</h2>
+      <button class="modal-close" id="closeModal">✕</button>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:1rem;">
+      <div class="form-group">
+        <label class="form-label">Task Name</label>
+        <input type="text" class="form-input" id="taskName" placeholder="e.g. Write project proposal…" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select class="form-select" id="taskCategory">
+            <option value="work">💼 Work</option>
+            <option value="personal">🏠 Personal</option>
+            <option value="creative">🎨 Creative</option>
+            <option value="health">💪 Health</option>
+            <option value="learning">📚 Learning</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Duration</label>
+          <select class="form-select" id="taskDuration">
+            <option value="15">15 min</option>
+            <option value="30">30 min</option>
+            <option value="60">1 hour</option>
+            <option value="90">1.5 hours</option>
+            <option value="120">2 hours</option>
+            <option value="180" selected>3+ hours</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Energy Required</label>
+          <select class="form-select" id="taskEnergy">
+            <option value="low">🌿 Low</option>
+            <option value="medium">⚡ Medium</option>
+            <option value="high" selected>🔥 High</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Priority</label>
+          <select class="form-select" id="taskPriority">
+            <option value="low">🟢 Low</option>
+            <option value="medium" selected>🟡 Medium</option>
+            <option value="high">🔴 High</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes (optional)</label>
+        <input type="text" class="form-input" id="taskNotes" placeholder="Any extra context…" />
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn--secondary" id="cancelModal">Cancel</button>
+      <button class="btn btn--primary" id="plantTask">🌱 Plant it!</button>
+    </div>
+  </div>
+</div>
 
-  <script src="script.js"></script>
+<script>
+// ── Data ──
+const PLANTS_DATA = [
+  { id:1, name:'Strategy doc', category:'work', energy:'high', duration:90, priority:'high', status:'blooming', emoji:'📄', age:3 },
+  { id:2, name:'Q2 Review', category:'work', energy:'medium', duration:45, priority:'high', status:'blooming', emoji:'📊', age:5 },
+  { id:3, name:'Team meeting', category:'work', energy:'medium', duration:60, priority:'medium', status:'blooming', emoji:'👥', age:1 },
+  { id:4, name:'Portfolio', category:'creative', energy:'high', duration:120, priority:'medium', status:'blooming', emoji:'🎨', age:7 },
+  { id:5, name:'Inbox', category:'work', energy:'low', duration:30, priority:'low', status:'growing', emoji:'📧', age:2 },
+  { id:6, name:'Read article', category:'learning', energy:'low', duration:20, priority:'low', status:'growing', emoji:'📖', age:4 },
+  { id:7, name:'Morning run', category:'health', energy:'high', duration:45, priority:'high', status:'growing', emoji:'🏃', age:0 },
+  { id:8, name:'Side project', category:'creative', energy:'high', duration:90, priority:'medium', status:'growing', emoji:'💻', age:6 },
+  { id:9, name:'Journal', category:'personal', energy:'low', duration:15, priority:'low', status:'growing', emoji:'✍️', age:1 },
+  { id:10, name:'Design mockup', category:'creative', energy:'medium', duration:60, priority:'medium', status:'seed', emoji:'🖼️', age:0 },
+  { id:11, name:'Budget review', category:'personal', energy:'medium', duration:30, priority:'medium', status:'seed', emoji:'💰', age:0 },
+  { id:12, name:'Learn Spanish', category:'learning', energy:'medium', duration:20, priority:'low', status:'seed', emoji:'🇪🇸', age:0 },
+  { id:13, name:'Call dentist', category:'health', energy:'low', duration:5, priority:'high', status:'wilting', emoji:'📞', age:14 },
+  { id:14, name:'Tax forms', category:'personal', energy:'high', duration:120, priority:'high', status:'wilting', emoji:'📋', age:21 },
+];
+
+const SUGGESTIONS = [
+  { name:'Write strategy document', cat:'work', energy:'high', duration:'90 min', score:98, fit:'Best fit', fitTag:'sage', icon:'🧠', bg:'var(--clr-sage-lt)' },
+  { name:'Q2 metrics deep-dive', cat:'work', energy:'high', duration:'60 min', score:91, fit:'Great fit', fitTag:'moss', icon:'📊', bg:'var(--clr-moss-lt)' },
+  { name:'Portfolio redesign', cat:'creative', energy:'high', duration:'120 min', score:85, fit:'Good fit', fitTag:'lavender', icon:'🎨', bg:'var(--clr-lav-lt)' },
+  { name:'Code review session', cat:'work', energy:'medium', duration:'45 min', score:78, fit:'Good fit', fitTag:'sky', icon:'💻', bg:'var(--clr-sky-lt)' },
+  { name:'Clear email inbox', cat:'work', energy:'low', duration:'30 min', score:60, fit:'Light task', fitTag:'amber', icon:'📧', bg:'var(--clr-amber-lt)' },
+];
+
+let plants = [...PLANTS_DATA];
+let nextId = 15;
+
+// Plant SVG generators
+function bloomSVG(color, size=70) {
+  return `<svg width="${size}" height="${size+20}" viewBox="0 0 70 90">
+    <line x1="35" y1="90" x2="35" y2="40" stroke="#5A7A5C" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="35" y1="65" x2="22" y2="55" stroke="#7A9C50" stroke-width="1.5" stroke-linecap="round"/>
+    <ellipse cx="35" cy="32" rx="12" ry="15" fill="${color}" opacity="0.9"/>
+    <ellipse cx="24" cy="38" rx="8" ry="11" fill="${color}" opacity="0.7" transform="rotate(-35 24 38)"/>
+    <ellipse cx="46" cy="38" rx="8" ry="11" fill="${color}" opacity="0.7" transform="rotate(35 46 38)"/>
+    <ellipse cx="30" cy="28" rx="7" ry="10" fill="${color}" opacity="0.65" transform="rotate(-15 30 28)"/>
+    <ellipse cx="40" cy="28" rx="7" ry="10" fill="${color}" opacity="0.65" transform="rotate(15 40 28)"/>
+    <circle cx="35" cy="30" r="6" fill="#FFD93D"/>
+    <circle cx="35" cy="30" r="3" fill="#E8A240"/>
+  </svg>`;
+}
+
+function growSVG(color) {
+  return `<svg width="60" height="80" viewBox="0 0 60 80">
+    <line x1="30" y1="80" x2="30" y2="35" stroke="#5A7A5C" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M30 35 Q18 20 22 8 Q30 2 36 16 Q42 8 30 35Z" fill="${color}" opacity="0.85"/>
+    <path d="M30 55 Q16 46 18 36" stroke="${color}" stroke-width="2" fill="none" stroke-linecap="round"/>
+  </svg>`;
+}
+
+function seedSVG() {
+  return `<svg width="44" height="60" viewBox="0 0 44 60">
+    <line x1="22" y1="60" x2="22" y2="44" stroke="#5A7A5C" stroke-width="2" stroke-linecap="round" stroke-dasharray="4 3"/>
+    <ellipse cx="22" cy="38" rx="8" ry="11" fill="#9A78CC" opacity="0.6"/>
+    <ellipse cx="22" cy="35" rx="5" ry="6" fill="#C8A8F0" opacity="0.7"/>
+    <circle cx="22" cy="33" r="3" fill="white" opacity="0.5"/>
+  </svg>`;
+}
+
+function wiltSVG() {
+  return `<svg width="50" height="65" viewBox="0 0 50 65">
+    <line x1="25" y1="65" x2="25" y2="35" stroke="#8B6B4A" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 2" opacity="0.7"/>
+    <path d="M25 35 Q14 28 16 20 Q22 18 24 28" fill="#C8A080" opacity="0.5" transform="rotate(10 25 35)"/>
+    <path d="M25 35 Q36 26 34 18 Q28 16 26 26" fill="#C8A080" opacity="0.4" transform="rotate(-8 25 35)"/>
+  </svg>`;
+}
+
+function getPlantSVG(p) {
+  const colors = { work:'#E8607A', personal:'#5AACCC', creative:'#9A78CC', health:'#7A9C50', learning:'#E8A240' };
+  const c = colors[p.category] || '#5A7A5C';
+  switch(p.status) {
+    case 'blooming': return bloomSVG(c);
+    case 'growing':  return growSVG(c);
+    case 'seed':     return seedSVG();
+    case 'wilting':  return wiltSVG();
+    default: return seedSVG();
+  }
+}
+
+function getBg(p) {
+  const bgs = { blooming:'#E8F5E0', growing:'#FFF3DC', seed:'#E0F4FB', wilting:'#FFE8EC' };
+  return bgs[p.status] || '#F4EFE4';
+}
+
+function getStatusIcon(s) {
+  return { blooming:'✅', growing:'📈', seed:'🌱', wilting:'⚠️' }[s] || '';
+}
+
+function renderGarden(filter = 'all') {
+  const ground = document.getElementById('gardenGround');
+  const filtered = filter === 'all' ? plants : plants.filter(p => p.category === filter);
+
+  // Group by status
+  const groups = { blooming:[], growing:[], seed:[], wilting:[] };
+  filtered.forEach(p => (groups[p.status] || groups.seed).push(p));
+
+  let html = '';
+  const rows = [
+    { key:'blooming', label:'🌸 Blooming', y:0 },
+    { key:'growing',  label:'🌿 Growing', y:1 },
+    { key:'seed',     label:'🌱 Seeds', y:2 },
+    { key:'wilting',  label:'🥀 Need attention', y:3 },
+  ];
+
+  rows.forEach(row => {
+    const group = groups[row.key];
+    if(!group.length) return;
+    html += `<div style="margin-bottom:1.5rem;">
+      <div style="font-size:0.72rem; font-weight:500; text-transform:uppercase; letter-spacing:0.08em; color:rgba(45,74,48,0.6); margin-bottom:0.75rem;">${row.label}</div>
+      <div class="plant-row">`;
+    group.forEach(p => {
+      html += `
+        <div class="plant-item" onclick="markDone(${p.id})" title="${p.name}">
+          <div class="plant-tooltip">
+            <strong style="display:block;margin-bottom:0.25rem;">${p.emoji} ${p.name}</strong>
+            <span style="color:var(--text-light);">⏱ ${p.duration}min · 🏷 ${p.category}</span>
+          </div>
+          <div style="position:relative;">
+            ${getPlantSVG(p)}
+            <div class="plant-status" style="background:${p.status==='wilting'?'var(--clr-petal)':p.status==='blooming'?'var(--clr-sage)':'var(--clr-amber)'};">
+              ${p.status==='wilting'?'!':p.status==='blooming'?'✓':'·'}
+            </div>
+          </div>
+          <div class="plant-label" style="color:${p.status==='wilting'?'var(--clr-rose)':'var(--clr-soil)'}">
+            ${p.name.length > 10 ? p.name.slice(0,10)+'…' : p.name}
+          </div>
+        </div>`;
+    });
+    html += `</div></div>`;
+  });
+
+  ground.innerHTML = html;
+  updateStats(filtered);
+}
+
+function renderSuggestions() {
+  const list = document.getElementById('suggestionsList');
+  list.innerHTML = SUGGESTIONS.map(s => `
+    <div class="task-suggestion" onclick="addSuggestion('${s.name}')">
+      <div class="task-suggestion__icon" style="background:${s.bg}">${s.icon}</div>
+      <div class="task-suggestion__body">
+        <div class="task-suggestion__name">${s.name}</div>
+        <div class="task-suggestion__meta">⏱ ${s.duration} · 🏷 ${s.cat} · ⚡ ${s.energy} energy</div>
+        <div class="task-suggestion__tags"><span class="tag tag--${s.fitTag}">${s.fit}</span></div>
+      </div>
+      <div class="task-suggestion__score">${s.score}</div>
+    </div>
+  `).join('');
+}
+
+function updateStats(list) {
+  document.getElementById('bloomCount').textContent = list.filter(p=>p.status==='blooming').length;
+  document.getElementById('growCount').textContent  = list.filter(p=>p.status==='growing').length;
+  document.getElementById('seedCount').textContent  = list.filter(p=>p.status==='seed').length;
+  document.getElementById('wiltCount').textContent  = list.filter(p=>p.status==='wilting').length;
+}
+
+function markDone(id) {
+  const p = plants.find(x=>x.id===id);
+  if(!p) return;
+  const cycle = ['seed','growing','blooming'];
+  const idx = cycle.indexOf(p.status);
+  if(p.status === 'wilting') { p.status = 'growing'; }
+  else if(idx !== -1) { p.status = cycle[Math.min(idx+1, cycle.length-1)]; }
+  renderGarden(currentFilter);
+}
+
+let currentFilter = 'all';
+
+// Category filters
+document.getElementById('categoryFilters').addEventListener('click', e => {
+  const chip = e.target.closest('.chip');
+  if(!chip) return;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+  chip.classList.add('selected');
+  currentFilter = chip.dataset.cat;
+  renderGarden(currentFilter);
+});
+
+// Energy slider
+document.getElementById('energySlider').addEventListener('input', function() {
+  const labels = ['', 'Low', 'Medium', 'High'];
+  document.getElementById('energyVal').textContent = labels[this.value];
+});
+
+// Time slider
+document.getElementById('timeSlider').addEventListener('input', function() {
+  const v = parseInt(this.value);
+  document.getElementById('timeVal').textContent = v < 2 ? `${v*30} min` : `${v} hrs`;
+});
+
+// Mood buttons
+document.querySelectorAll('.mood-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+
+// Modal
+document.getElementById('openModal').addEventListener('click', () => {
+  document.getElementById('modalOverlay').classList.add('open');
+  document.getElementById('taskName').focus();
+});
+['closeModal','cancelModal'].forEach(id => {
+  document.getElementById(id).addEventListener('click', () => {
+    document.getElementById('modalOverlay').classList.remove('open');
+  });
+});
+
+document.getElementById('plantTask').addEventListener('click', () => {
+  const name = document.getElementById('taskName').value.trim();
+  if(!name) return;
+  const newPlant = {
+    id: nextId++,
+    name,
+    category: document.getElementById('taskCategory').value,
+    energy: document.getElementById('taskEnergy').value,
+    duration: parseInt(document.getElementById('taskDuration').value),
+    priority: document.getElementById('taskPriority').value,
+    status: 'seed',
+    emoji: '🌱',
+    age: 0,
+  };
+  plants.push(newPlant);
+  document.getElementById('taskName').value = '';
+  document.getElementById('modalOverlay').classList.remove('open');
+  renderGarden(currentFilter);
+});
+
+// Click outside modal
+document.getElementById('modalOverlay').addEventListener('click', e => {
+  if(e.target === document.getElementById('modalOverlay'))
+    document.getElementById('modalOverlay').classList.remove('open');
+});
+
+// View toggle
+document.getElementById('viewGarden').addEventListener('click', function() {
+  this.classList.add('active');
+  document.getElementById('viewBoard').classList.remove('active');
+  renderGarden(currentFilter);
+});
+document.getElementById('viewBoard').addEventListener('click', function() {
+  this.classList.add('active');
+  document.getElementById('viewGarden').classList.remove('active');
+  window.location.href = 'projects.html';
+});
+
+// Mobile nav
+document.getElementById('hamburger').addEventListener('click', function() {
+  document.getElementById('navLinks').classList.toggle('open');
+});
+
+function addSuggestion(name) {
+  plants.push({ id:nextId++, name, category:'work', energy:'high', duration:90, priority:'high', status:'seed', emoji:'✨', age:0 });
+  renderGarden(currentFilter);
+}
+
+// Init
+renderGarden();
+renderSuggestions();
+</script>
 </body>
 </html>

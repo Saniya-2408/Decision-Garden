@@ -1,45 +1,328 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Projects | Decision Garden</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Projects Board — Decision Planner</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body { background: #F0EBE2; }
+
+    .board-header {
+      background: white;
+      border-bottom: 1px solid rgba(139,107,74,0.1);
+      padding: 1.25rem 0;
+    }
+    .board-header__inner {
+      display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;
+    }
+    .board-header h1 { font-size: 1.5rem; font-weight: 500; }
+
+    .board-container {
+      display: flex; gap: 1.25rem;
+      padding: 2rem clamp(1rem, 4vw, 2.5rem);
+      min-height: calc(100vh - 160px);
+      overflow-x: auto;
+      align-items: flex-start;
+    }
+
+    .board-column {
+      flex-shrink: 0;
+      width: 300px;
+      background: rgba(255,255,255,0.7);
+      border-radius: var(--radius-lg);
+      border: 1.5px solid rgba(139,107,74,0.1);
+      backdrop-filter: blur(8px);
+      display: flex; flex-direction: column;
+      max-height: calc(100vh - 200px);
+    }
+
+    .column-header {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid rgba(139,107,74,0.08);
+      display: flex; align-items: center; justify-content: space-between;
+      background: white;
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    }
+    .column-title {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-weight: 500; font-size: 0.95rem;
+    }
+    .column-count {
+      background: rgba(139,107,74,0.1);
+      color: var(--text-muted);
+      font-size: 0.75rem; font-weight: 500;
+      padding: 0.15rem 0.5rem; border-radius: var(--radius-pill);
+    }
+
+    .column-body {
+      padding: 1rem;
+      flex: 1;
+      overflow-y: auto;
+      display: flex; flex-direction: column; gap: 0.75rem;
+      min-height: 100px;
+    }
+
+    .column-body.drag-over {
+      background: rgba(90,122,92,0.06);
+      border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    }
+
+    .board-card {
+      background: white;
+      border-radius: var(--radius-md);
+      border: 1.5px solid rgba(139,107,74,0.1);
+      padding: 1rem 1.1rem;
+      cursor: grab;
+      transition: all var(--transition);
+      position: relative;
+      overflow: hidden;
+      user-select: none;
+    }
+    .board-card::before {
+      content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3.5px;
+    }
+    .board-card:hover {
+      box-shadow: var(--shadow-hover);
+      transform: translateY(-1px);
+    }
+    .board-card.dragging {
+      opacity: 0.5; cursor: grabbing;
+      transform: rotate(2deg) scale(0.97);
+    }
+
+    .card-top { display: flex; align-items: flex-start; gap: 0.625rem; margin-bottom: 0.5rem; }
+    .card-name { font-weight: 500; font-size: 0.9rem; flex: 1; }
+    .card-emoji { font-size: 1.1rem; flex-shrink: 0; }
+
+    .card-desc { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.625rem; line-height: 1.5; }
+    .card-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.4rem; }
+    .card-footer-left { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+
+    .avatar-xs {
+      width: 24px; height: 24px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.65rem; font-weight: 500;
+    }
+
+    .due-date { font-size: 0.72rem; color: var(--text-light); }
+    .due-date.overdue { color: var(--clr-petal); font-weight: 500; }
+
+    /* Prog mini */
+    .card-prog { margin-top: 0.5rem; }
+    .card-prog-bar { height: 3px; background: rgba(139,107,74,0.1); border-radius: 2px; overflow: hidden; }
+    .card-prog-fill { height: 100%; border-radius: 2px; transition: width 0.4s; }
+
+    /* Add column btn */
+    .add-column-btn {
+      flex-shrink: 0; width: 60px; height: 60px;
+      background: rgba(255,255,255,0.5);
+      border: 2px dashed rgba(139,107,74,0.2);
+      border-radius: var(--radius-lg);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; cursor: pointer;
+      transition: all 0.18s; color: var(--text-muted);
+      align-self: flex-start;
+    }
+    .add-column-btn:hover { background: white; border-color: var(--clr-sage); color: var(--clr-sage); }
+
+    /* Project switcher */
+    .project-tabs {
+      display: flex; gap: 0.5rem; overflow-x: auto;
+      padding-bottom: 0.25rem;
+    }
+    .project-tab {
+      padding: 0.4rem 1rem; border-radius: var(--radius-pill);
+      font-size: 0.85rem; white-space: nowrap; cursor: pointer;
+      border: 1.5px solid rgba(139,107,74,0.15);
+      transition: all 0.18s;
+    }
+    .project-tab.active { background: var(--clr-sage); color: white; border-color: var(--clr-sage); }
+    .project-tab:hover:not(.active) { border-color: var(--clr-sage); }
+
+    @media (max-width: 600px) {
+      .board-container { flex-direction: column; padding: 1rem; }
+      .board-column { width: 100%; max-height: none; }
+    }
+  </style>
 </head>
 <body>
-<header>
-  <nav>
-    <div class="logo">🌱 Decision Garden</div>
-    <ul>
-      <li><a href="index.html">Home</a></li>
-      <li><a href="features.html">Features</a></li>
-      <li><a href="garden.html" class="active">Garden</a></li>
-      <li><a href="about.html">About</a></li>
-    </ul>
-  </nav>
-</header>
 
-<section class="page-hero small">
-  <h1>Projects</h1>
-  <p>Longer tasks that shape your bigger goals.</p>
-</section>
-
-<section class="task-list fade-in delay-1">
-  <div class="task-card">
-    <div class="emoji">📊</div><div class="text">Design quarterly report</div>
+<nav class="nav">
+  <div class="container">
+    <div class="nav__inner">
+      <a href="index.html" class="nav__logo">
+        <div class="nav__logo-icon">🌿</div>
+        Decision Planner
+      </a>
+      <ul class="nav__links" id="navLinks">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="garden.html">My Garden</a></li>
+        <li><a href="quick-tasks.html">Quick Tasks</a></li>
+        <li><a href="projects.html" class="active">Projects</a></li>
+        <li><a href="features.html">Features</a></li>
+        <li><a href="about.html">About</a></li>
+      </ul>
+      <a href="garden.html" class="nav__cta btn">Open Planner</a>
+      <button class="nav__hamburger" id="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
   </div>
-  <div class="task-card">
-    <div class="emoji">👥</div><div class="text">Team meeting & roadmap planning</div>
-  </div>
-  <div class="task-card">
-    <div class="emoji">🛠️</div><div class="text">Build new feature</div>
-  </div>
-</section>
+</nav>
 
-<footer>
-  <p>🌱 Decision Garden © 2025</p>
-</footer>
+<div class="board-header">
+  <div class="container">
+    <div class="board-header__inner">
+      <div>
+        <h1>🗂️ Project Board</h1>
+      </div>
+      <div class="project-tabs">
+        <div class="project-tab active">🏢 Work</div>
+        <div class="project-tab">🏠 Personal</div>
+        <div class="project-tab">🎨 Creative</div>
+        <div class="project-tab">📚 Learning</div>
+        <div class="project-tab" onclick="alert('Create new project!')">+ New project</div>
+      </div>
+      <div style="margin-left:auto; display:flex; gap:0.75rem;">
+        <a href="garden.html" class="btn btn--secondary btn--sm">🌿 Garden view</a>
+        <button class="btn btn--primary btn--sm" onclick="addCard()">+ Add task</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-<script src="script.js"></script>
+<div class="board-container" id="board"></div>
+
+<script>
+const COLUMNS = [
+  { id:'backlog',     label:'🌱 Backlog',      color:'#9A78CC' },
+  { id:'todo',        label:'📋 To Do',         color:'#5AACCC' },
+  { id:'inprogress',  label:'⚡ In Progress',   color:'#E8A240' },
+  { id:'review',      label:'🔍 Review',        color:'#E8607A' },
+  { id:'done',        label:'✅ Done',           color:'#7A9C50' },
+];
+
+const TASKS = [
+  { id:1, col:'backlog', name:'User research interviews', emoji:'🎙️', desc:'Schedule and conduct 5 user interviews for new feature', priority:'medium', due:'Jun 5', progress:0, cat:'work', energy:'medium' },
+  { id:2, col:'backlog', name:'Competitor analysis', emoji:'🔎', desc:'Benchmark against top 3 competitors', priority:'low', due:'Jun 10', progress:0, cat:'work', energy:'high' },
+  { id:3, col:'todo', name:'Write sprint brief', emoji:'📝', desc:'Define scope and acceptance criteria for Sprint 14', priority:'high', due:'May 20', progress:0, cat:'work', energy:'high' },
+  { id:4, col:'todo', name:'Design onboarding flow', emoji:'🎨', desc:'Create wireframes for new user onboarding', priority:'high', due:'May 22', progress:0, cat:'creative', energy:'high' },
+  { id:5, col:'todo', name:'API documentation', emoji:'📡', desc:'Document all v2 endpoints with examples', priority:'medium', due:'May 25', progress:0, cat:'work', energy:'medium' },
+  { id:6, col:'inprogress', name:'Dashboard redesign', emoji:'📊', desc:'Rework the analytics dashboard layout', priority:'high', due:'May 18', progress:65, cat:'creative', energy:'high' },
+  { id:7, col:'inprogress', name:'Performance audit', emoji:'⚡', desc:'Profile and optimize slow page loads', priority:'high', due:'May 19', progress:40, cat:'work', energy:'high' },
+  { id:8, col:'inprogress', name:'Email campaign', emoji:'📧', desc:'Design and copy for May newsletter', priority:'medium', due:'May 17', progress:80, cat:'work', energy:'medium' },
+  { id:9, col:'review', name:'Pricing page copy', emoji:'💬', desc:'Revised pricing messaging for A/B test', priority:'high', due:'May 16', progress:100, cat:'work', energy:'low' },
+  { id:10, col:'review', name:'Component library', emoji:'🧩', desc:'New design tokens and component updates', priority:'medium', due:'May 18', progress:95, cat:'creative', energy:'medium' },
+  { id:11, col:'done', name:'Q1 retrospective', emoji:'🔄', desc:'Team retrospective and learnings document', priority:'medium', due:'May 10', progress:100, cat:'work', energy:'low' },
+  { id:12, col:'done', name:'Onboarding email series', emoji:'✉️', desc:'6-email drip sequence for new signups', priority:'high', due:'May 8', progress:100, cat:'work', energy:'medium' },
+];
+
+let tasks = [...TASKS];
+let nextId = 13;
+let draggedId = null;
+
+const PRIORITY_TAG = { high:'tag--petal', medium:'tag--amber', low:'tag--moss' };
+const ENERGY_LABEL = { high:'🔥', medium:'⚡', low:'🌿' };
+const CAT_COLORS = { work:'#E8607A', personal:'#5AACCC', creative:'#9A78CC', health:'#7A9C50', learning:'#E8A240' };
+
+function render() {
+  const board = document.getElementById('board');
+  board.innerHTML = COLUMNS.map(col => {
+    const colTasks = tasks.filter(t => t.col === col.id);
+    return `
+      <div class="board-column" id="col-${col.id}">
+        <div class="column-header">
+          <div class="column-title">
+            <span>${col.label}</span>
+          </div>
+          <span class="column-count">${colTasks.length}</span>
+        </div>
+        <div class="column-body"
+          id="body-${col.id}"
+          ondragover="onDragOver(event,'${col.id}')"
+          ondragleave="onDragLeave(event,'${col.id}')"
+          ondrop="onDrop(event,'${col.id}')">
+          ${colTasks.map(t => renderCard(t, col.color)).join('')}
+          <button class="add-task-btn" style="margin-top:0.25rem;" onclick="addCardToCol('${col.id}')">
+            <span>+</span> Add task
+          </button>
+        </div>
+      </div>`;
+  }).join('');
+
+  // Re-bind drag events
+  document.querySelectorAll('.board-card').forEach(card => {
+    card.addEventListener('dragstart', e => {
+      draggedId = parseInt(card.dataset.id);
+      card.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    card.addEventListener('dragend', () => {
+      card.classList.remove('dragging');
+      document.querySelectorAll('.column-body').forEach(b => b.classList.remove('drag-over'));
+    });
+  });
+}
+
+function renderCard(t, accentColor) {
+  const color = CAT_COLORS[t.cat] || accentColor;
+  const isOverdue = t.col !== 'done' && t.due === 'May 16';
+  return `
+    <div class="board-card" data-id="${t.id}" draggable="true"
+      style="--accent-color:${color}; border-left-color:${color};">
+      <div class="card-top">
+        <span class="card-emoji">${t.emoji}</span>
+        <span class="card-name">${t.name}</span>
+      </div>
+      <p class="card-desc">${t.desc}</p>
+      <div class="card-footer">
+        <div class="card-footer-left">
+          <span class="tag ${PRIORITY_TAG[t.priority]}">${t.priority}</span>
+          <span class="tag" style="background:rgba(0,0,0,0.04);color:var(--text-muted);">${ENERGY_LABEL[t.energy]}</span>
+        </div>
+        <span class="due-date ${isOverdue?'overdue':''}">📅 ${t.due}</span>
+      </div>
+      ${t.progress > 0 ? `
+      <div class="card-prog">
+        <div class="card-prog-bar">
+          <div class="card-prog-fill" style="width:${t.progress}%;background:${color};"></div>
+        </div>
+      </div>` : ''}
+    </div>`;
+}
+
+function onDragOver(e, colId) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  document.getElementById('body-'+colId).classList.add('drag-over');
+}
+function onDragLeave(e, colId) {
+  document.getElementById('body-'+colId).classList.remove('drag-over');
+}
+function onDrop(e, colId) {
+  e.preventDefault();
+  document.getElementById('body-'+colId).classList.remove('drag-over');
+  if(draggedId === null) return;
+  const task = tasks.find(t => t.id === draggedId);
+  if(task) { task.col = colId; if(colId === 'done') task.progress = 100; }
+  draggedId = null;
+  render();
+}
+
+function addCardToCol(colId) {
+  const name = prompt('Task name:');
+  if(!name) return;
+  tasks.push({ id:nextId++, col:colId, name, emoji:'🌱', desc:'New task', priority:'medium', due:'TBD', progress:0, cat:'work', energy:'medium' });
+  render();
+}
+function addCard() { addCardToCol('todo'); }
+
+document.getElementById('hamburger').addEventListener('click', function() {
+  document.getElementById('navLinks').classList.toggle('open');
+});
+
+render();
+</script>
 </body>
 </html>

@@ -1,52 +1,401 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Quick Tasks | Decision Garden</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quick Tasks — Decision Planner</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    .page-hero {
+      background: linear-gradient(135deg, #E8F5E0 0%, #FFF3DC 50%, #E0F4FB 100%);
+      padding: 3rem 0 2.5rem;
+      border-bottom: 1px solid rgba(139,107,74,0.08);
+    }
+    .filter-panel {
+      background: white;
+      border-radius: var(--radius-xl);
+      padding: 1.75rem;
+      box-shadow: var(--shadow-card);
+      margin-bottom: 2rem;
+    }
+    .filter-row {
+      display: flex; gap: 1.5rem; flex-wrap: wrap;
+      align-items: flex-end;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid rgba(139,107,74,0.08);
+      margin-bottom: 1.25rem;
+    }
+    .filter-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .filter-field { flex: 1; min-width: 180px; }
+
+    .results-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;
+    }
+    .results-count {
+      font-size: 0.875rem; color: var(--text-muted);
+    }
+    .results-count strong { color: var(--clr-sage-dk); }
+
+    .task-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.1rem;
+    }
+
+    .qt-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      border: 1.5px solid rgba(139,107,74,0.08);
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+      transition: all var(--transition);
+      cursor: pointer;
+      position: relative;
+    }
+    .qt-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-hover);
+      border-color: rgba(90,122,92,0.2);
+    }
+    .qt-card__accent {
+      height: 4px; width: 100%;
+    }
+    .qt-card__body { padding: 1.25rem; }
+    .qt-card__top {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 0.75rem;
+    }
+    .qt-card__name { font-weight: 500; font-size: 1rem; flex: 1; margin-right: 0.75rem; }
+    .qt-card__score {
+      font-family: var(--ff-display); font-size: 1.5rem; font-weight: 300;
+      min-width: 44px; text-align: right;
+    }
+    .qt-card__meta {
+      display: flex; flex-wrap: wrap; gap: 0.4rem;
+      margin-bottom: 0.875rem;
+    }
+    .qt-card__actions { display: flex; gap: 0.6rem; }
+    .qt-card__progress {
+      margin-top: 0.875rem;
+    }
+    .qt-card__progress-label {
+      display: flex; justify-content: space-between;
+      font-size: 0.72rem; color: var(--text-light); margin-bottom: 0.3rem;
+    }
+
+    /* Fit badge */
+    .fit-badge {
+      position: absolute; top: 1rem; right: 1rem;
+      padding: 0.2rem 0.6rem; border-radius: var(--radius-pill);
+      font-size: 0.7rem; font-weight: 500;
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center; padding: 4rem 2rem;
+      background: white; border-radius: var(--radius-xl);
+      border: 2px dashed rgba(139,107,74,0.15);
+    }
+    .empty-state__icon { font-size: 3.5rem; margin-bottom: 1rem; }
+    .empty-state h3 { font-size: 1.2rem; margin-bottom: 0.5rem; }
+    .empty-state p { color: var(--text-muted); font-size: 0.9rem; }
+
+    /* Context bar at top */
+    .context-strip {
+      display: flex; gap: 1rem; flex-wrap: wrap;
+    }
+    .context-pill {
+      display: flex; align-items: center; gap: 0.4rem;
+      background: white; border: 1.5px solid rgba(139,107,74,0.12);
+      border-radius: var(--radius-pill);
+      padding: 0.4rem 0.875rem; font-size: 0.85rem;
+      cursor: pointer; transition: all 0.18s;
+    }
+    .context-pill.active {
+      background: var(--clr-sage);
+      color: white; border-color: var(--clr-sage);
+    }
+    .context-pill:hover:not(.active) { border-color: var(--clr-sage); }
+
+    @media (max-width: 600px) {
+      .filter-row { flex-direction: column; }
+      .task-grid { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
-  <header>
-    <nav>
-      <div class="logo"><span>🌱</span> Decision Garden</div>
-      <ul>
+
+<nav class="nav">
+  <div class="container">
+    <div class="nav__inner">
+      <a href="index.html" class="nav__logo">
+        <div class="nav__logo-icon">🌿</div>
+        Decision Planner
+      </a>
+      <ul class="nav__links" id="navLinks">
         <li><a href="index.html">Home</a></li>
+        <li><a href="garden.html">My Garden</a></li>
+        <li><a href="quick-tasks.html" class="active">Quick Tasks</a></li>
+        <li><a href="projects.html">Projects</a></li>
         <li><a href="features.html">Features</a></li>
-        <li><a href="garden.html" class="active">Garden</a></li>
         <li><a href="about.html">About</a></li>
       </ul>
-      <div class="theme-toggle"><div>🌙 Dark</div></div>
-    </nav>
-  </header>
+      <a href="garden.html" class="nav__cta btn">Open Planner</a>
+      <button class="nav__hamburger" id="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
 
-  <main>
-    <section class="page-hero small container fade-in">
-      <div>
-        <h1>Quick Tasks</h1>
-        <p>Feel the momentum with small wins.</p>
-      </div>
-      <div style="margin-left:auto"><span class="badge">10 min wins</span></div>
-    </section>
+<!-- Hero -->
+<div class="page-hero">
+  <div class="container">
+    <div class="tag tag--amber mb-2">⚡ Smart Filter Engine</div>
+    <h1 class="display-md mb-2">Quick Task Finder</h1>
+    <p class="body-lg text-muted mb-3">Tell us how you feel right now. We'll find the perfect task seeds to plant.</p>
+    <div class="context-strip" id="energyPills">
+      <span class="context-pill active" data-val="high">🔥 High Energy</span>
+      <span class="context-pill" data-val="medium">⚡ Medium Energy</span>
+      <span class="context-pill" data-val="low">🌿 Low Energy</span>
+    </div>
+  </div>
+</div>
 
-    <section class="task-list fade-in delay-1 container">
-      <div class="task-card">
-        <div class="emoji">✉️</div><div class="text">Send welcome email</div>
+<div class="section">
+  <div class="container">
+    <!-- Filter Panel -->
+    <div class="filter-panel">
+      <div class="filter-row">
+        <div class="filter-field form-group">
+          <label class="form-label">🏷 Category</label>
+          <select class="form-select" id="filterCat">
+            <option value="all">All categories</option>
+            <option value="work">💼 Work</option>
+            <option value="personal">🏠 Personal</option>
+            <option value="creative">🎨 Creative</option>
+            <option value="health">💪 Health</option>
+            <option value="learning">📚 Learning</option>
+          </select>
+        </div>
+        <div class="filter-field form-group">
+          <label class="form-label">⏱ Duration (max)</label>
+          <select class="form-select" id="filterDuration">
+            <option value="999">Any duration</option>
+            <option value="15">Under 15 min</option>
+            <option value="30">Under 30 min</option>
+            <option value="60">Under 1 hour</option>
+            <option value="90">Under 90 min</option>
+            <option value="120">Under 2 hours</option>
+          </select>
+        </div>
+        <div class="filter-field form-group">
+          <label class="form-label">🎯 Priority</label>
+          <select class="form-select" id="filterPriority">
+            <option value="all">All priorities</option>
+            <option value="high">🔴 High</option>
+            <option value="medium">🟡 Medium</option>
+            <option value="low">🟢 Low</option>
+          </select>
+        </div>
+        <div class="filter-field form-group">
+          <label class="form-label">🔍 Search</label>
+          <input type="text" class="form-input" id="filterSearch" placeholder="Search tasks…" />
+        </div>
       </div>
-      <div class="task-card">
-        <div class="emoji">📝</div><div class="text">Write a blog idea</div>
+      <div class="filter-row">
+        <div style="flex:1;">
+          <div class="form-label mb-1">😊 Mood</div>
+          <div class="chip-group" id="moodFilter">
+            <div class="chip selected" data-mood="all">All moods</div>
+            <div class="chip" data-mood="focused">🧠 Focused</div>
+            <div class="chip" data-mood="creative">🎨 Creative</div>
+            <div class="chip" data-mood="routine">🔄 Routine</div>
+            <div class="chip" data-mood="social">👥 Social</div>
+          </div>
+        </div>
+        <div>
+          <button class="btn btn--secondary btn--sm" onclick="resetFilters()">Reset filters</button>
+        </div>
       </div>
-      <div class="task-card">
-        <div class="emoji">📞</div><div class="text">Call friend</div>
-      </div>
-      <p style="color:var(--muted); margin-top:12px">Tip: click a card to feel a micro-burst; double-click to mark as light-done.</p>
-    </section>
-  </main>
+    </div>
 
-  <footer>
-    <p>🌱 Decision Garden © 2025</p>
-  </footer>
+    <!-- Results -->
+    <div class="results-header">
+      <div class="results-count"><strong id="resultCount">0</strong> tasks match your current state</div>
+      <div class="flex gap-1">
+        <span class="tag tag--sage" id="energyTag">🔥 High energy</span>
+        <span class="tag tag--sky" id="moodTag">🧠 Focused</span>
+      </div>
+    </div>
 
-  <script src="script.js"></script>
+    <div class="task-grid" id="taskGrid"></div>
+  </div>
+</div>
+
+<script>
+const ALL_TASKS = [
+  { id:1, name:'Write strategy document', cat:'work', energy:'high', duration:90, priority:'high', mood:'focused', progress:20, desc:'Define Q3 objectives and key results' },
+  { id:2, name:'Deep code review', cat:'work', energy:'high', duration:60, priority:'high', mood:'focused', progress:0, desc:'Review PR #142 thoroughly' },
+  { id:3, name:'Design system update', cat:'creative', energy:'high', duration:120, priority:'medium', mood:'creative', progress:35, desc:'Update color tokens and component library' },
+  { id:4, name:'Portfolio website', cat:'creative', energy:'high', duration:180, priority:'medium', mood:'creative', progress:60, desc:'Redesign personal portfolio' },
+  { id:5, name:'Morning run 5K', cat:'health', energy:'high', duration:40, priority:'high', mood:'focused', progress:0, desc:'Cardio session before work' },
+  { id:6, name:'Team brainstorm', cat:'work', energy:'medium', duration:60, priority:'medium', mood:'social', progress:0, desc:'New product features session' },
+  { id:7, name:'Read research paper', cat:'learning', energy:'medium', duration:45, priority:'low', mood:'focused', progress:50, desc:'AI alignment paper from Anthropic' },
+  { id:8, name:'Organize notes', cat:'personal', energy:'low', duration:20, priority:'low', mood:'routine', progress:0, desc:'Sort Obsidian vault' },
+  { id:9, name:'Clear email inbox', cat:'work', energy:'low', duration:30, priority:'medium', mood:'routine', progress:0, desc:'Process and respond to pending emails' },
+  { id:10, name:'Grocery list', cat:'personal', energy:'low', duration:10, priority:'low', mood:'routine', progress:0, desc:'Plan the week\'s meals' },
+  { id:11, name:'Spanish lesson', cat:'learning', energy:'medium', duration:20, priority:'low', mood:'focused', progress:15, desc:'Duolingo + Anki flashcards' },
+  { id:12, name:'Meditation', cat:'health', energy:'low', duration:15, priority:'high', mood:'routine', progress:0, desc:'10-min mindfulness session' },
+  { id:13, name:'Budget spreadsheet', cat:'personal', energy:'medium', duration:45, priority:'high', mood:'focused', progress:10, desc:'Monthly expense tracking' },
+  { id:14, name:'Draft blog post', cat:'creative', energy:'medium', duration:60, priority:'low', mood:'creative', progress:30, desc:'Productivity tools roundup' },
+  { id:15, name:'Call mentor', cat:'work', energy:'medium', duration:30, priority:'medium', mood:'social', progress:0, desc:'Monthly check-in call' },
+  { id:16, name:'Stretch routine', cat:'health', energy:'low', duration:10, priority:'medium', mood:'routine', progress:0, desc:'Morning stretch & foam roll' },
+];
+
+const COLORS = { work:'#E8607A', personal:'#5AACCC', creative:'#9A78CC', health:'#7A9C50', learning:'#E8A240' };
+const BG = { work:'var(--clr-petal-lt)', personal:'var(--clr-sky-lt)', creative:'var(--clr-lav-lt)', health:'var(--clr-sage-lt)', learning:'var(--clr-amber-lt)' };
+const ICONS = { work:'💼', personal:'🏠', creative:'🎨', health:'💪', learning:'📚' };
+
+let state = { energy:'high', cat:'all', duration:999, priority:'all', mood:'all', search:'' };
+
+function score(task) {
+  let s = 50;
+  if(task.energy === state.energy) s += 30;
+  else if((task.energy==='low' && state.energy==='medium') || (task.energy==='medium' && state.energy==='high')) s += 10;
+  if(state.mood !== 'all' && task.mood === state.mood) s += 15;
+  if(task.priority==='high') s += 5;
+  return Math.min(99, s);
+}
+
+function getFit(s) {
+  if(s >= 90) return { label:'Best fit ⭐', cls:'tag--sage' };
+  if(s >= 75) return { label:'Great fit', cls:'tag--moss' };
+  if(s >= 60) return { label:'Good fit', cls:'tag--sky' };
+  return { label:'Light task', cls:'tag--amber' };
+}
+
+function render() {
+  const filtered = ALL_TASKS.filter(t => {
+    if(state.cat !== 'all' && t.cat !== state.cat) return false;
+    if(t.duration > state.duration) return false;
+    if(state.priority !== 'all' && t.priority !== state.priority) return false;
+    if(state.mood !== 'all' && t.mood !== state.mood) return false;
+    if(state.search && !t.name.toLowerCase().includes(state.search.toLowerCase())) return false;
+    return true;
+  }).sort((a,b) => score(b) - score(a));
+
+  document.getElementById('resultCount').textContent = filtered.length;
+  const grid = document.getElementById('taskGrid');
+
+  if(!filtered.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
+      <div class="empty-state__icon">🌾</div>
+      <h3>No tasks match these filters</h3>
+      <p>Try adjusting your energy level or category selection.</p>
+      <button class="btn btn--secondary mt-3" onclick="resetFilters()">Reset filters</button>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(t => {
+    const s = score(t);
+    const fit = getFit(s);
+    const color = COLORS[t.cat] || '#5A7A5C';
+    const bg = BG[t.cat] || 'var(--clr-sage-lt)';
+    const durationLabel = t.duration < 60 ? `${t.duration} min` : `${(t.duration/60).toFixed(1).replace('.0','')} hr`;
+    const energyIcons = { low:'🌿', medium:'⚡', high:'🔥' };
+    const prioColor = { high:'var(--clr-petal)', medium:'var(--clr-amber)', low:'var(--clr-sage)' };
+
+    return `<div class="qt-card" onclick="toggleTask(${t.id})">
+      <div class="qt-card__accent" style="background:${color};"></div>
+      <div class="qt-card__body">
+        <div class="qt-card__top">
+          <div class="qt-card__name">${ICONS[t.cat]} ${t.name}</div>
+          <div class="qt-card__score" style="color:${color}">${s}</div>
+        </div>
+        <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.75rem;">${t.desc}</p>
+        <div class="qt-card__meta">
+          <span class="tag" style="background:${bg};color:${color};">⏱ ${durationLabel}</span>
+          <span class="tag tag--sage">${energyIcons[t.energy]} ${t.energy}</span>
+          <span class="tag" style="background:rgba(0,0,0,0.04);color:var(--text-muted);">${t.priority} priority</span>
+        </div>
+        ${t.progress > 0 ? `
+        <div class="qt-card__progress">
+          <div class="qt-card__progress-label"><span>Progress</span><span>${t.progress}%</span></div>
+          <div class="progress-bar"><div class="progress-bar__fill" style="width:${t.progress}%;background:${color};"></div></div>
+        </div>` : ''}
+        <div class="qt-card__actions mt-2">
+          <button class="btn btn--primary btn--sm" style="background:${color};box-shadow:none;" onclick="event.stopPropagation();startTask(${t.id})">Start now</button>
+          <button class="btn btn--secondary btn--sm" onclick="event.stopPropagation();addToGarden(${t.id})">🌱 Plant</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleTask(id) {}
+function startTask(id) {
+  const t = ALL_TASKS.find(x=>x.id===id);
+  if(t) { alert(`🚀 Starting: ${t.name}\n\nGood luck! You can do this! 🌟`); }
+}
+function addToGarden(id) {
+  const t = ALL_TASKS.find(x=>x.id===id);
+  if(t) { alert(`🌱 "${t.name}" has been planted in your garden!\n\nHead to My Garden to watch it grow.`); }
+}
+
+function resetFilters() {
+  state = { energy:'high', cat:'all', duration:999, priority:'all', mood:'all', search:'' };
+  document.getElementById('filterCat').value = 'all';
+  document.getElementById('filterDuration').value = '999';
+  document.getElementById('filterPriority').value = 'all';
+  document.getElementById('filterSearch').value = '';
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+  document.querySelector('.chip[data-mood="all"]').classList.add('selected');
+  document.querySelectorAll('.context-pill').forEach(p => p.classList.remove('active'));
+  document.querySelector('.context-pill[data-val="high"]').classList.add('active');
+  updateTags();
+  render();
+}
+
+function updateTags() {
+  const energyLabel = { high:'🔥 High energy', medium:'⚡ Medium energy', low:'🌿 Low energy' };
+  document.getElementById('energyTag').textContent = energyLabel[state.energy];
+  const moodLabel = { all:'🌈 All moods', focused:'🧠 Focused', creative:'🎨 Creative', routine:'🔄 Routine', social:'👥 Social' };
+  document.getElementById('moodTag').textContent = moodLabel[state.mood];
+}
+
+// Event listeners
+document.getElementById('energyPills').addEventListener('click', e => {
+  const pill = e.target.closest('.context-pill');
+  if(!pill) return;
+  document.querySelectorAll('.context-pill').forEach(p => p.classList.remove('active'));
+  pill.classList.add('active');
+  state.energy = pill.dataset.val;
+  updateTags(); render();
+});
+
+document.getElementById('filterCat').addEventListener('change', e => { state.cat = e.target.value; render(); });
+document.getElementById('filterDuration').addEventListener('change', e => { state.duration = parseInt(e.target.value); render(); });
+document.getElementById('filterPriority').addEventListener('change', e => { state.priority = e.target.value; render(); });
+document.getElementById('filterSearch').addEventListener('input', e => { state.search = e.target.value; render(); });
+
+document.getElementById('moodFilter').addEventListener('click', e => {
+  const chip = e.target.closest('.chip');
+  if(!chip) return;
+  document.querySelectorAll('#moodFilter .chip').forEach(c => c.classList.remove('selected'));
+  chip.classList.add('selected');
+  state.mood = chip.dataset.mood;
+  updateTags(); render();
+});
+
+document.getElementById('hamburger').addEventListener('click', function() {
+  document.getElementById('navLinks').classList.toggle('open');
+});
+
+updateTags();
+render();
+</script>
 </body>
 </html>

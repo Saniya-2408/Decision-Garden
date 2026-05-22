@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About — Decision Planner</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .about-hero {
+      background: linear-gradient(135deg, #E8F5E0 0%, #FFF3DC 60%, #F0EBFF 100%);
+      padding: clamp(4rem, 10vw, 7rem) 0 clamp(3rem, 8vw, 5rem);
+      position: relative; overflow: hidden;
+    }
+    .about-hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 50% 60% at 90% 20%, rgba(232,96,122,0.1) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 50% at 10% 80%, rgba(90,122,92,0.12) 0%, transparent 60%);
+    }
+    .about-hero .container { position: relative; z-index: 1; }
+
+    .manifesto {
+      max-width: 680px; margin: 0 auto;
+      font-family: var(--ff-display);
+      font-size: clamp(1.4rem, 3vw, 2.1rem);
+      font-weight: 300; line-height: 1.5;
+      letter-spacing: -0.01em;
+      color: var(--clr-soil);
+    }
+    .manifesto em {
+      font-style: italic; color: var(--clr-sage);
+    }
+
+    /* Values */
+    .values-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.25rem;
+    }
+    .value-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: 1.75rem;
+      border: 1.5px solid rgba(139,107,74,0.08);
+      box-shadow: var(--shadow-card);
+      transition: all var(--transition);
+    }
+    .value-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+    .value-icon { font-size: 2rem; margin-bottom: 0.875rem; }
+    .value-title { font-size: 1.1rem; font-weight: 500; margin-bottom: 0.5rem; }
+    .value-desc { font-size: 0.875rem; color: var(--text-muted); line-height: 1.65; }
+
+    /* Team */
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+    }
+    .team-card {
+      text-align: center; padding: 2rem 1.5rem;
+      background: white; border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-card);
+      border: 1.5px solid rgba(139,107,74,0.08);
+      transition: all var(--transition);
+    }
+    .team-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+    .team-avatar {
+      width: 80px; height: 80px;
+      border-radius: 50%; margin: 0 auto 1rem;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem;
+      border: 3px solid white;
+      box-shadow: 0 4px 16px rgba(61,43,26,0.12);
+    }
+    .team-name { font-weight: 500; font-size: 1rem; margin-bottom: 0.2rem; }
+    .team-role { font-size: 0.82rem; color: var(--text-light); margin-bottom: 0.75rem; }
+    .team-bio { font-size: 0.82rem; color: var(--text-muted); line-height: 1.6; }
+
+    /* Timeline */
+    .timeline { position: relative; padding-left: 2rem; }
+    .timeline::before {
+      content: '';
+      position: absolute; left: 8px; top: 8px; bottom: 8px; width: 2px;
+      background: linear-gradient(180deg, var(--clr-sage-lt), var(--clr-petal-lt), var(--clr-amber-lt));
+      border-radius: 2px;
+    }
+    .timeline-item {
+      position: relative; margin-bottom: 2rem;
+    }
+    .timeline-dot {
+      position: absolute; left: -1.625rem; top: 4px;
+      width: 14px; height: 14px; border-radius: 50%;
+      border: 2px solid white;
+      box-shadow: 0 0 0 2px var(--clr-sage);
+    }
+    .timeline-date {
+      font-size: 0.75rem; font-weight: 500; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--clr-sage); margin-bottom: 0.3rem;
+    }
+    .timeline-title { font-weight: 500; font-size: 1rem; margin-bottom: 0.25rem; }
+    .timeline-desc { font-size: 0.875rem; color: var(--text-muted); line-height: 1.6; }
+
+    /* Contact form */
+    .contact-form {
+      background: white; border-radius: var(--radius-xl);
+      padding: 2.5rem;
+      box-shadow: var(--shadow-card);
+      max-width: 600px; margin: 0 auto;
+    }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+    @media (max-width: 600px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .team-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="container">
+    <div class="nav__inner">
+      <a href="index.html" class="nav__logo">
+        <div class="nav__logo-icon">🌿</div>
+        Decision Planner
+      </a>
+      <ul class="nav__links" id="navLinks">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="garden.html">My Garden</a></li>
+        <li><a href="quick-tasks.html">Quick Tasks</a></li>
+        <li><a href="projects.html">Projects</a></li>
+        <li><a href="features.html">Features</a></li>
+        <li><a href="about.html" class="active">About</a></li>
+      </ul>
+      <a href="garden.html" class="nav__cta btn">Open Planner</a>
+      <button class="nav__hamburger" id="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="about-hero">
+  <div class="container">
+    <div class="text-center mb-4">
+      <div class="tag tag--sage mb-3">🌿 Our story</div>
+    </div>
+    <p class="manifesto text-center">
+      We believe productivity isn't about doing <em>more</em> —
+      it's about doing the <em>right things</em> at the right moment,
+      with the energy you actually have.
+    </p>
+    <div class="text-center mt-4">
+      <div style="display:flex; justify-content:center; gap:2.5rem; flex-wrap:wrap;">
+        <div>
+          <div style="font-family:var(--ff-display);font-size:2.2rem;font-weight:500;color:var(--clr-sage-dk);">2023</div>
+          <div style="font-size:0.8rem;color:var(--text-light);">Founded</div>
+        </div>
+        <div>
+          <div style="font-family:var(--ff-display);font-size:2.2rem;font-weight:500;color:var(--clr-sage-dk);">12k+</div>
+          <div style="font-size:0.8rem;color:var(--text-light);">Active gardeners</div>
+        </div>
+        <div>
+          <div style="font-family:var(--ff-display);font-size:2.2rem;font-weight:500;color:var(--clr-sage-dk);">94%</div>
+          <div style="font-size:0.8rem;color:var(--text-light);">Task completion rate</div>
+        </div>
+        <div>
+          <div style="font-family:var(--ff-display);font-size:2.2rem;font-weight:500;color:var(--clr-sage-dk);">4.9★</div>
+          <div style="font-size:0.8rem;color:var(--text-light);">Average rating</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Our Story -->
+<section class="section">
+  <div class="container--narrow">
+    <div class="tag tag--petal mb-3">🌱 How it started</div>
+    <h2 class="display-md mb-3">Born from burnout, not hustle culture</h2>
+    <div style="font-size:1.05rem; color:var(--text-muted); line-height:1.8; display:flex; flex-direction:column; gap:1.25rem;">
+      <p>
+        In late 2022, our founder Arjun was staring at a 47-item to-do list at 9am on a Monday, feeling completely paralysed. Not because the tasks were hard — but because he had no idea <em>which one to start with</em> given how tired he felt that morning.
+      </p>
+      <p>
+        He tried every productivity app on the market. They all had the same flaw: they treated every task as equally urgent, every hour as equally productive. They ignored the most important variable — <em>you</em>.
+      </p>
+      <p>
+        Decision Planner was built on a simple idea: your tasks should adapt to your energy, not the other way around. And the process of planning should feel like tending a garden — slow, intentional, and deeply satisfying.
+      </p>
+      <p>
+        Today, over 12,000 people use Decision Planner to reclaim focus, reduce decision fatigue, and find joy in their daily work. We're just getting started.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Values -->
+<section class="section section--alt">
+  <div class="container">
+    <div class="text-center mb-4">
+      <div class="tag tag--sage mb-2">🌻 What we believe</div>
+      <h2 class="display-md">Our values</h2>
+    </div>
+    <div class="values-grid">
+      <div class="value-card">
+        <div class="value-icon">🌿</div>
+        <div class="value-title">Energy is everything</div>
+        <p class="value-desc">Your capacity changes every day. The best task system respects that — and adapts intelligently instead of demanding constant peak performance.</p>
+      </div>
+      <div class="value-card">
+        <div class="value-icon">🎨</div>
+        <div class="value-title">Beauty matters</div>
+        <p class="value-desc">Tools you love to open get used. We invest deeply in making Decision Planner visually delightful, because aesthetics and function are not opposites.</p>
+      </div>
+      <div class="value-card">
+        <div class="value-icon">🔒</div>
+        <div class="value-title">Your data is yours</div>
+        <p class="value-desc">We're offline-first by design. Your tasks live on your device. No surveillance, no selling data, no cloud lock-in. Privacy is a feature, not a footnote.</p>
+      </div>
+      <div class="value-card">
+        <div class="value-icon">🌱</div>
+        <div class="value-title">Progress over perfection</div>
+        <p class="value-desc">A small step forward every day beats a perfect system you never use. Our garden metaphor celebrates consistency, not intensity.</p>
+      </div>
+      <div class="value-card">
+        <div class="value-icon">💚</div>
+        <div class="value-title">Sustainable productivity</div>
+        <p class="value-desc">We don't gamify burnout. Decision Planner gently nudges, never demands. The goal is a life well-lived, not a to-do list fully cleared.</p>
+      </div>
+      <div class="value-card">
+        <div class="value-icon">🤝</div>
+        <div class="value-title">Community-first</div>
+        <p class="value-desc">Our roadmap is shaped by real user feedback. Every major feature started as a conversation with a gardener who needed something better.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Team -->
+<section class="section">
+  <div class="container">
+    <div class="text-center mb-4">
+      <div class="tag tag--amber mb-2">👥 The team</div>
+      <h2 class="display-md">The gardeners behind the garden</h2>
+    </div>
+    <div class="team-grid">
+      <div class="team-card">
+        <div class="team-avatar" style="background:var(--clr-sage-lt);">🧑‍💻</div>
+        <div class="team-name">Arjun Mehta</div>
+        <div class="team-role">Founder & CEO</div>
+        <p class="team-bio">Former burnout survivor turned productivity researcher. Believes every person deserves a system that works with them, not against them.</p>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar" style="background:var(--clr-petal-lt);">👩‍🎨</div>
+        <div class="team-name">Priya Sharma</div>
+        <div class="team-role">Head of Design</div>
+        <p class="team-bio">Crafted the garden metaphor and visual language. Obsessed with the intersection of emotion and interface design.</p>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar" style="background:var(--clr-sky-lt);">👨‍🔬</div>
+        <div class="team-name">Dev Kapoor</div>
+        <div class="team-role">Lead Engineer</div>
+        <p class="team-bio">Built the offline-first architecture and smart filtering engine. Runs on coffee and long hikes.</p>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar" style="background:var(--clr-amber-lt);">👩‍💼</div>
+        <div class="team-name">Nisha Patel</div>
+        <div class="team-role">Growth & Community</div>
+        <p class="team-bio">Nurtures the gardener community. Turns user feedback into features that actually solve real problems.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Roadmap / Timeline -->
+<section class="section section--alt">
+  <div class="container">
+    <div class="flex gap-4" style="flex-wrap:wrap; align-items:flex-start;">
+      <div style="flex:1; min-width:280px;">
+        <div class="tag tag--lavender mb-3">🗺 Roadmap</div>
+        <h2 class="display-md mb-3">Where we're growing</h2>
+        <p class="body-md text-muted">
+          We ship slowly and intentionally. Every feature earns its place by making the experience genuinely better — not just bigger.
+        </p>
+      </div>
+      <div style="flex:1.5; min-width:300px;">
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:var(--clr-sage);box-shadow:0 0 0 2px var(--clr-sage);"></div>
+            <div class="timeline-date">Q1 2023 ✅</div>
+            <div class="timeline-title">Initial Launch</div>
+            <p class="timeline-desc">Garden visualization, basic task management, and offline storage. 500 beta users in the first week.</p>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:var(--clr-sage);box-shadow:0 0 0 2px var(--clr-sage);"></div>
+            <div class="timeline-date">Q3 2023 ✅</div>
+            <div class="timeline-title">Smart Filter Engine</div>
+            <p class="timeline-desc">Energy, mood, and duration-based filtering with real-time fit scores. Grew to 5,000 active users.</p>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:var(--clr-amber);box-shadow:0 0 0 2px var(--clr-amber);"></div>
+            <div class="timeline-date">Q1 2024 ✅</div>
+            <div class="timeline-title">Project Boards</div>
+            <p class="timeline-desc">Drag-and-drop Kanban with multi-project support. Crossed 12,000 gardeners worldwide.</p>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:var(--clr-petal);box-shadow:0 0 0 2px var(--clr-petal);"></div>
+            <div class="timeline-date">Q3 2025 🔜</div>
+            <div class="timeline-title">AI Pattern Learning</div>
+            <p class="timeline-desc">The planner learns your personal productivity rhythms and predicts your best task windows across the day.</p>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:rgba(139,107,74,0.3);box-shadow:0 0 0 2px rgba(139,107,74,0.3);"></div>
+            <div class="timeline-date">Q1 2026 🌱</div>
+            <div class="timeline-title">Team Gardens</div>
+            <p class="timeline-desc">Shared garden spaces for small teams — visibility into collective energy without surveillance.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Contact -->
+<section class="section">
+  <div class="container">
+    <div class="text-center mb-4">
+      <div class="tag tag--sky mb-2">💬 Get in touch</div>
+      <h2 class="display-md mb-2">We'd love to hear from you</h2>
+      <p class="body-lg text-muted">Feature idea? Bug report? Just want to share how your garden is growing?</p>
+    </div>
+    <div class="contact-form">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">First name</label>
+          <input type="text" class="form-input" placeholder="Arjun" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last name</label>
+          <input type="text" class="form-input" placeholder="Mehta" />
+        </div>
+      </div>
+      <div class="form-group mt-2">
+        <label class="form-label">Email address</label>
+        <input type="email" class="form-input" placeholder="you@example.com" />
+      </div>
+      <div class="form-group mt-2">
+        <label class="form-label">Topic</label>
+        <select class="form-select">
+          <option>Feature request 🌱</option>
+          <option>Bug report 🐛</option>
+          <option>General feedback 💬</option>
+          <option>Partnership 🤝</option>
+          <option>Press inquiry 📰</option>
+        </select>
+      </div>
+      <div class="form-group mt-2">
+        <label class="form-label">Message</label>
+        <textarea class="form-input" rows="5" placeholder="Tell us what's on your mind…" style="resize:vertical;"></textarea>
+      </div>
+      <div class="mt-3 flex gap-2 items-center" style="flex-wrap:wrap;">
+        <button class="btn btn--primary" onclick="alert('Message sent! 🌿 We\'ll get back to you soon.')">Send message 🌿</button>
+        <span class="body-sm text-light">We typically reply within 24 hours.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div>
+        <div class="footer__logo">🌿 Decision Planner</div>
+        <p style="font-size:0.875rem;color:rgba(253,250,245,0.5);max-width:260px;line-height:1.65;">Grow your productivity with context-aware task intelligence.</p>
+      </div>
+      <div>
+        <div class="footer__title">Navigate</div>
+        <a href="garden.html" class="footer__link">My Garden</a>
+        <a href="quick-tasks.html" class="footer__link">Quick Tasks</a>
+        <a href="projects.html" class="footer__link">Projects</a>
+        <a href="neglected.html" class="footer__link">Neglected</a>
+      </div>
+      <div>
+        <div class="footer__title">Features</div>
+        <a href="features.html" class="footer__link">Overview</a>
+        <a href="feature-detail1.html" class="footer__link">Garden Mode</a>
+        <a href="feature-detail2.html" class="footer__link">Context AI</a>
+      </div>
+      <div>
+        <div class="footer__title">Company</div>
+        <a href="about.html" class="footer__link">About</a>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <span>© 2025 Decision Planner. All rights reserved.</span>
+      <span>Made with 🌿 for focused minds</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+document.getElementById('hamburger').addEventListener('click', function() {
+  document.getElementById('navLinks').classList.toggle('open');
+});
+</script>
+</body>
+</html>

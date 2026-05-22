@@ -1,44 +1,601 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Home | Decision Garden</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Decision Planner — Grow Your Day</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ── Hero ── */
+    .hero {
+      padding: clamp(5rem, 12vw, 9rem) 0 clamp(3rem, 8vw, 6rem);
+      position: relative; overflow: hidden;
+    }
+    .hero__bg {
+      position: absolute; inset: 0; z-index: 0;
+      background:
+        radial-gradient(ellipse 70% 60% at 80% 40%, rgba(90,172,204,0.12) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 70% at 10% 80%, rgba(232,96,122,0.1) 0%, transparent 60%),
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(90,122,92,0.13) 0%, transparent 60%);
+    }
+    .hero__inner {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 4rem;
+      align-items: center; position: relative; z-index: 1;
+    }
+    .hero__eyebrow {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: var(--clr-sage-lt); color: var(--clr-sage-dk);
+      padding: 0.35rem 1rem; border-radius: var(--radius-pill);
+      font-size: 0.8rem; font-weight: 500; margin-bottom: 1.25rem;
+    }
+    .hero__title {
+      font-size: clamp(2.8rem, 5.5vw, 5rem);
+      font-weight: 300;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.25rem;
+    }
+    .hero__title em {
+      font-style: italic; font-weight: 400;
+      color: var(--clr-sage);
+      position: relative;
+    }
+    .hero__title em::after {
+      content: '';
+      position: absolute; bottom: 2px; left: 0; right: 0; height: 3px;
+      background: var(--clr-petal);
+      border-radius: 2px;
+      transform: skewX(-5deg);
+    }
+    .hero__sub {
+      font-size: 1.125rem; color: var(--text-muted);
+      line-height: 1.65; margin-bottom: 2.25rem; max-width: 520px;
+    }
+    .hero__actions { display: flex; flex-wrap: wrap; gap: 0.875rem; }
+    .hero__stats {
+      display: flex; gap: 2rem; margin-top: 2.5rem;
+      padding-top: 2rem; border-top: 1px solid rgba(139,107,74,0.1);
+    }
+    .hero__stat-num {
+      font-family: var(--ff-display); font-size: 2rem; font-weight: 500;
+      color: var(--clr-sage-dk);
+    }
+    .hero__stat-label { font-size: 0.82rem; color: var(--text-light); margin-top: 0.1rem; }
+
+    /* Hero Garden Illustration */
+    .hero__visual {
+      position: relative; display: flex; justify-content: center; align-items: center;
+    }
+    .hero__garden-wrap {
+      width: 100%; max-width: 480px;
+      background: white;
+      border-radius: var(--radius-xl);
+      box-shadow: 0 20px 60px rgba(61,43,26,0.12), 0 0 0 1px rgba(139,107,74,0.08);
+      overflow: hidden;
+      position: relative;
+    }
+    .garden-header {
+      background: linear-gradient(135deg, #E8F5E0 0%, #D4F0CC 100%);
+      padding: 1.25rem 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid rgba(90,122,92,0.15);
+    }
+    .garden-dots { display: flex; gap: 6px; }
+    .garden-dots span {
+      width: 10px; height: 10px; border-radius: 50%;
+    }
+    .garden-dots span:nth-child(1) { background: #FF6B6B; }
+    .garden-dots span:nth-child(2) { background: #FFD93D; }
+    .garden-dots span:nth-child(3) { background: #6BCB77; }
+    .garden-title {
+      font-family: var(--ff-display); font-size: 0.95rem; font-weight: 500;
+      color: var(--clr-sage-dk);
+    }
+
+    .garden-body { padding: 1.5rem; background: #FDFAF5; }
+    .garden-context {
+      display: flex; gap: 0.75rem; margin-bottom: 1.25rem;
+    }
+    .context-chip {
+      flex: 1; padding: 0.6rem 0.875rem;
+      background: white; border: 1.5px solid rgba(139,107,74,0.15);
+      border-radius: var(--radius-md); font-size: 0.78rem;
+      display: flex; flex-direction: column; gap: 0.25rem;
+    }
+    .context-chip__label { color: var(--text-light); font-size: 0.7rem; }
+    .context-chip__value { font-weight: 500; color: var(--text-main); }
+
+    .plant-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 0.75rem; margin-bottom: 1.25rem;
+    }
+    .plant-cell {
+      aspect-ratio: 1; border-radius: var(--radius-md);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: flex-end;
+      padding: 0.5rem 0.25rem;
+      font-size: 0.65rem; font-weight: 500; text-align: center;
+      position: relative; overflow: hidden;
+      cursor: pointer;
+      transition: transform var(--transition);
+    }
+    .plant-cell:hover { transform: scale(1.04); }
+    .plant-cell svg { margin-bottom: 2px; }
+
+    .suggestion-list { display: flex; flex-direction: column; gap: 0.6rem; }
+    .suggestion-item {
+      background: white;
+      border: 1.5px solid rgba(139,107,74,0.1);
+      border-radius: var(--radius-md);
+      padding: 0.75rem 1rem;
+      display: flex; align-items: center; gap: 0.875rem;
+      animation: float-up 0.5s ease both;
+    }
+    .suggestion-item:nth-child(2) { animation-delay: 0.08s; }
+    .suggestion-item:nth-child(3) { animation-delay: 0.16s; }
+    .suggestion-icon {
+      width: 34px; height: 34px; border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+    .suggestion-info { flex: 1; }
+    .suggestion-name { font-size: 0.85rem; font-weight: 500; }
+    .suggestion-meta { font-size: 0.72rem; color: var(--text-light); }
+
+    /* ── Feature Highlights ── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+    }
+    .feature-card {
+      padding: 1.875rem;
+      border-radius: var(--radius-lg);
+      background: white;
+      border: 1.5px solid rgba(139,107,74,0.08);
+      box-shadow: var(--shadow-card);
+      transition: all var(--transition);
+      cursor: pointer;
+    }
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-hover);
+    }
+    .feature-icon {
+      width: 52px; height: 52px;
+      border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px; margin-bottom: 1.1rem;
+    }
+    .feature-title { font-size: 1.1rem; font-weight: 500; margin-bottom: 0.5rem; }
+    .feature-desc { font-size: 0.875rem; color: var(--text-muted); line-height: 1.6; }
+
+    /* ── How It Works ── */
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+      position: relative;
+    }
+    .steps-grid::before {
+      content: '';
+      position: absolute; top: 36px; left: 10%; right: 10%;
+      height: 2px;
+      background: linear-gradient(90deg, var(--clr-sage-lt), var(--clr-petal-lt), var(--clr-amber-lt));
+      border-radius: 2px;
+    }
+    .step-card {
+      text-align: center; padding: 1.5rem 1rem;
+      position: relative; z-index: 1;
+    }
+    .step-num {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--ff-display); font-size: 1.3rem; font-weight: 500;
+      margin: 0 auto 1.1rem;
+      border: 2px solid transparent;
+    }
+    .step-title { font-size: 1rem; font-weight: 500; margin-bottom: 0.5rem; }
+    .step-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; }
+
+    /* ── Testimonials ── */
+    .testimonial-card {
+      padding: 1.875rem;
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-card);
+    }
+    .testimonial-quote { font-size: 1.3rem; margin-bottom: 1rem; }
+    .testimonial-text { font-size: 0.95rem; color: var(--text-muted); line-height: 1.65; margin-bottom: 1.25rem; font-style: italic; }
+    .testimonial-author { display: flex; align-items: center; gap: 0.75rem; }
+    .avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 500; font-size: 0.85rem; flex-shrink: 0;
+    }
+
+    /* ── CTA Banner ── */
+    .cta-banner {
+      background: linear-gradient(135deg, var(--clr-sage-dk) 0%, #1A3B1E 100%);
+      border-radius: var(--radius-xl);
+      padding: clamp(2.5rem, 6vw, 4rem);
+      text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .cta-banner::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 50%, rgba(90,172,204,0.15) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 50%, rgba(232,96,122,0.12) 0%, transparent 60%);
+    }
+    .cta-banner > * { position: relative; z-index: 1; }
+    .cta-banner h2 { color: var(--clr-cream); margin-bottom: 1rem; }
+    .cta-banner p { color: rgba(253,250,245,0.75); margin-bottom: 2rem; max-width: 500px; margin-left: auto; margin-right: auto; }
+
+    @media (max-width: 768px) {
+      .hero__inner { grid-template-columns: 1fr; gap: 2.5rem; }
+      .hero__visual { order: -1; }
+      .steps-grid::before { display: none; }
+    }
+  </style>
 </head>
 <body>
-  <header>
-    <nav>
-      <div class="logo"><span>🌱</span> Decision Garden</div>
-      <ul>
+
+<!-- ── Navigation ── -->
+<nav class="nav">
+  <div class="container">
+    <div class="nav__inner">
+      <a href="index.html" class="nav__logo">
+        <div class="nav__logo-icon">🌿</div>
+        Decision Planner
+      </a>
+      <ul class="nav__links" id="navLinks">
         <li><a href="index.html" class="active">Home</a></li>
+        <li><a href="garden.html">My Garden</a></li>
+        <li><a href="quick-tasks.html">Quick Tasks</a></li>
+        <li><a href="projects.html">Projects</a></li>
         <li><a href="features.html">Features</a></li>
-        <li><a href="garden.html">Garden</a></li>
         <li><a href="about.html">About</a></li>
       </ul>
-      <div class="theme-toggle"><div>🌙 Dark</div></div>
-    </nav>
-  </header>
-
-  <!-- Static Hero with Background Image -->
-  <section class="home-hero">
-    <div class="overlay">
-      <h1>Grow Your Focus</h1>
-      <p class="quote"></p>
+      <a href="garden.html" class="nav__cta btn">Open Planner</a>
+      <button class="nav__hamburger" id="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
     </div>
-  </section>
+  </div>
+</nav>
 
-  <main class="container fade-in-up">
-    <section>
-      <h2>Welcome to Decision Garden</h2>
-      <p>Where tasks grow, wilt, and bloom — reflecting your productivity in a living ecosystem. Organize your energy, not just your checkboxes.</p>
-    </section>
-  </main>
+<!-- ── Hero ── -->
+<section class="hero">
+  <div class="hero__bg"></div>
+  <div class="container">
+    <div class="hero__inner">
+      <div class="hero__content">
+        <div class="hero__eyebrow">🌱 Context-aware task intelligence</div>
+        <h1 class="hero__title">
+          Let your tasks<br><em>grow</em> with you
+        </h1>
+        <p class="hero__sub">
+          Decision Planner reads your energy, mood, and available time — then suggests the perfect tasks to bloom your productivity, one seed at a time.
+        </p>
+        <div class="hero__actions">
+          <a href="garden.html" class="btn btn--primary btn--lg">🌿 Open My Garden</a>
+          <a href="features.html" class="btn btn--secondary btn--lg">See how it works</a>
+        </div>
+        <div class="hero__stats">
+          <div>
+            <div class="hero__stat-num">94%</div>
+            <div class="hero__stat-label">Tasks completed on target days</div>
+          </div>
+          <div>
+            <div class="hero__stat-num">2.4×</div>
+            <div class="hero__stat-label">Productivity increase reported</div>
+          </div>
+          <div>
+            <div class="hero__stat-num">12k+</div>
+            <div class="hero__stat-label">Gardens thriving worldwide</div>
+          </div>
+        </div>
+      </div>
 
-  <footer>
-    <p>🌱 Decision Garden © 2025</p>
-  </footer>
+      <!-- Animated App Preview -->
+      <div class="hero__visual">
+        <div class="hero__garden-wrap">
+          <div class="garden-header">
+            <div class="garden-dots">
+              <span></span><span></span><span></span>
+            </div>
+            <div class="garden-title">🌸 My Garden · Today</div>
+            <div style="font-size:0.78rem; color:var(--clr-sage);">Fri, May 16</div>
+          </div>
+          <div class="garden-body">
+            <div class="garden-context">
+              <div class="context-chip">
+                <span class="context-chip__label">Energy</span>
+                <span class="context-chip__value">⚡ High</span>
+              </div>
+              <div class="context-chip">
+                <span class="context-chip__label">Mood</span>
+                <span class="context-chip__value">😊 Focused</span>
+              </div>
+              <div class="context-chip">
+                <span class="context-chip__label">Time</span>
+                <span class="context-chip__value">⏱ 3 hrs</span>
+              </div>
+            </div>
 
-  <script src="script.js"></script>
+            <!-- Mini plant garden -->
+            <div class="plant-grid">
+              <div class="plant-cell" style="background: #E8F5E0;" title="Blooming task">
+                <svg width="36" height="44" viewBox="0 0 36 44">
+                  <line x1="18" y1="44" x2="18" y2="20" stroke="#5A7A5C" stroke-width="2" stroke-linecap="round"/>
+                  <ellipse cx="18" cy="16" rx="8" ry="10" fill="#E8607A" opacity="0.9"/>
+                  <ellipse cx="14" cy="20" rx="5" ry="7" fill="#E8607A" opacity="0.7" transform="rotate(-30 14 20)"/>
+                  <ellipse cx="22" cy="20" rx="5" ry="7" fill="#E8607A" opacity="0.7" transform="rotate(30 22 20)"/>
+                  <circle cx="18" cy="15" r="4" fill="#FFD93D"/>
+                </svg>
+                <span style="color:var(--clr-sage-dk)">Report</span>
+              </div>
+              <div class="plant-cell" style="background: #FFF3DC;" title="Growing task">
+                <svg width="36" height="44" viewBox="0 0 36 44">
+                  <line x1="18" y1="44" x2="18" y2="26" stroke="#5A7A5C" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M18 26 Q10 18 12 10 Q18 6 22 14 Q26 10 18 26Z" fill="#7A9C50" opacity="0.85"/>
+                  <path d="M18 30 Q8 24 10 18" stroke="#7A9C50" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                </svg>
+                <span style="color:var(--clr-amber-dk)">Proposal</span>
+              </div>
+              <div class="plant-cell" style="background: #E0F4FB;" title="Seedling task">
+                <svg width="36" height="44" viewBox="0 0 36 44">
+                  <line x1="18" y1="44" x2="18" y2="34" stroke="#5A7A5C" stroke-width="2" stroke-linecap="round"/>
+                  <ellipse cx="18" cy="30" rx="6" ry="8" fill="#5AACCC" opacity="0.7"/>
+                  <ellipse cx="18" cy="28" rx="4" ry="5" fill="#9A78CC" opacity="0.6"/>
+                </svg>
+                <span style="color:#2A7A99">Emails</span>
+              </div>
+              <div class="plant-cell" style="background: #F0EBFF;" title="Wilting task">
+                <svg width="36" height="44" viewBox="0 0 36 44">
+                  <line x1="18" y1="44" x2="18" y2="28" stroke="#8B6B4A" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 2"/>
+                  <ellipse cx="16" cy="26" rx="5" ry="8" fill="#9A78CC" opacity="0.5" transform="rotate(20 16 26)"/>
+                </svg>
+                <span style="color:#6040AA">Review</span>
+              </div>
+            </div>
+
+            <!-- Suggested tasks -->
+            <div style="font-size:0.72rem; font-weight:500; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-light); margin-bottom:0.5rem;">✨ Suggested for you</div>
+            <div class="suggestion-list">
+              <div class="suggestion-item">
+                <div class="suggestion-icon" style="background:var(--clr-sage-lt);">🧠</div>
+                <div class="suggestion-info">
+                  <div class="suggestion-name">Write strategy doc</div>
+                  <div class="suggestion-meta">Deep focus · 90 min · High priority</div>
+                </div>
+                <div class="tag tag--sage">Best fit</div>
+              </div>
+              <div class="suggestion-item">
+                <div class="suggestion-icon" style="background:var(--clr-amber-lt);">📊</div>
+                <div class="suggestion-info">
+                  <div class="suggestion-name">Review Q2 metrics</div>
+                  <div class="suggestion-meta">Analytical · 45 min · Medium</div>
+                </div>
+                <div class="tag tag--amber">Good fit</div>
+              </div>
+              <div class="suggestion-item">
+                <div class="suggestion-icon" style="background:var(--clr-sky-lt);">📧</div>
+                <div class="suggestion-info">
+                  <div class="suggestion-name">Clear inbox backlog</div>
+                  <div class="suggestion-meta">Routine · 30 min · Low</div>
+                </div>
+                <div class="tag tag--sky">Quick win</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Features Section ── -->
+<section class="section">
+  <div class="container">
+    <div class="text-center mb-4">
+      <div class="tag tag--sage mb-2">🌿 Core Features</div>
+      <h2 class="display-md mb-2">Everything your garden needs</h2>
+      <p class="body-lg text-muted" style="max-width:560px;margin:0 auto;">A toolkit that grows alongside you — intelligent, beautiful, and always in season.</p>
+    </div>
+
+    <div class="features-grid reveal">
+      <a href="garden.html" class="feature-card" style="--hover-clr: var(--clr-sage-lt);">
+        <div class="feature-icon" style="background:var(--clr-sage-lt);">🌸</div>
+        <div class="feature-title">Garden Visualization</div>
+        <p class="feature-desc">Watch your tasks bloom, grow, or wilt in an interactive garden. Progress becomes visible and beautiful.</p>
+        <div class="mt-2"><span class="tag tag--sage">Interactive</span></div>
+      </a>
+      <a href="quick-tasks.html" class="feature-card">
+        <div class="feature-icon" style="background:var(--clr-amber-lt);">⚡</div>
+        <div class="feature-title">Smart Filtering Engine</div>
+        <p class="feature-desc">Filter by energy, duration, category, and mood. Get real-time suggestions that actually fit your moment.</p>
+        <div class="mt-2"><span class="tag tag--amber">AI-powered</span></div>
+      </a>
+      <a href="projects.html" class="feature-card">
+        <div class="feature-icon" style="background:var(--clr-sky-lt);">🗂️</div>
+        <div class="feature-title">Drag & Drop Planning</div>
+        <p class="feature-desc">Prioritize your day with an intuitive board. Move tasks, set goals, and see your schedule take shape.</p>
+        <div class="mt-2"><span class="tag tag--sky">Visual</span></div>
+      </a>
+      <a href="quick-tasks.html" class="feature-card">
+        <div class="feature-icon" style="background:var(--clr-lav-lt);">🧠</div>
+        <div class="feature-title">Context-Aware AI</div>
+        <p class="feature-desc">Declare your energy level and mood — the planner learns your patterns and surfaces the right tasks.</p>
+        <div class="mt-2"><span class="tag tag--lavender">Smart</span></div>
+      </a>
+      <a href="features.html" class="feature-card">
+        <div class="feature-icon" style="background:var(--clr-petal-lt);">📴</div>
+        <div class="feature-title">Offline-First</div>
+        <p class="feature-desc">All your data lives locally. Work anywhere, anytime — no internet required. Your garden never goes dark.</p>
+        <div class="mt-2"><span class="tag tag--petal">Reliable</span></div>
+      </a>
+      <a href="neglected.html" class="feature-card">
+        <div class="feature-icon" style="background:var(--clr-moss-lt);">🔔</div>
+        <div class="feature-title">Neglected Task Alerts</div>
+        <p class="feature-desc">Tasks that haven't been touched start to wilt. Get gentle nudges before important work gets left behind.</p>
+        <div class="mt-2"><span class="tag tag--moss">Mindful</span></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ── How It Works ── -->
+<section class="section section--alt">
+  <div class="container">
+    <div class="text-center mb-4">
+      <div class="tag tag--petal mb-2">🌻 How it works</div>
+      <h2 class="display-md mb-2">Your daily ritual, simplified</h2>
+      <p class="body-lg text-muted">Three simple steps to a flourishing, focused day.</p>
+    </div>
+
+    <div class="steps-grid reveal">
+      <div class="step-card">
+        <div class="step-num" style="background:var(--clr-sage-lt); color:var(--clr-sage-dk); border-color:var(--clr-sage);">1</div>
+        <h3 class="step-title">Set your context</h3>
+        <p class="step-desc">Tell the planner how you feel — energy level, current mood, and how much time you have. Takes 15 seconds.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num" style="background:var(--clr-petal-lt); color:var(--clr-rose); border-color:var(--clr-petal);">2</div>
+        <h3 class="step-title">Receive smart suggestions</h3>
+        <p class="step-desc">The engine surfaces tasks that match your current state — no decision fatigue, no second-guessing.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num" style="background:var(--clr-amber-lt); color:var(--clr-amber-dk); border-color:var(--clr-amber);">3</div>
+        <h3 class="step-title">Watch your garden grow</h3>
+        <p class="step-desc">As you complete tasks, your plants bloom. Progress is visual, rewarding, and satisfying to see.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num" style="background:var(--clr-sky-lt); color:#2A7A99; border-color:var(--clr-sky);">4</div>
+        <h3 class="step-title">Review and improve</h3>
+        <p class="step-desc">Weekly garden reports show patterns in your productivity, helping you plan better over time.</p>
+      </div>
+    </div>
+
+    <div class="text-center mt-4">
+      <a href="garden.html" class="btn btn--primary btn--lg">Start growing today 🌱</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── Testimonials ── -->
+<section class="section">
+  <div class="container">
+    <div class="text-center mb-4">
+      <div class="tag tag--amber mb-2">🌟 Stories from the garden</div>
+      <h2 class="display-md">Gardeners love it</h2>
+    </div>
+
+    <div class="grid-3 reveal">
+      <div class="testimonial-card card">
+        <div class="testimonial-quote">🌺</div>
+        <p class="testimonial-text">"I used to dread my task list. Now it feels like tending a garden — nurturing things, watching them bloom. This changed how I work entirely."</p>
+        <div class="testimonial-author">
+          <div class="avatar" style="background:var(--clr-sage-lt); color:var(--clr-sage-dk);">SM</div>
+          <div>
+            <div style="font-weight:500;font-size:0.9rem;">Shreya M.</div>
+            <div style="font-size:0.8rem;color:var(--text-light);">Product Designer</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card card">
+        <div class="testimonial-quote">🌿</div>
+        <p class="testimonial-text">"The mood-based filtering is genius. When I'm low energy it doesn't show me 3-hour deep-work tasks. It's like having a coach who actually listens."</p>
+        <div class="testimonial-author">
+          <div class="avatar" style="background:var(--clr-sky-lt); color:#2A7A99;">RK</div>
+          <div>
+            <div style="font-weight:500;font-size:0.9rem;">Rohan K.</div>
+            <div style="font-size:0.8rem;color:var(--text-light);">Software Engineer</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card card">
+        <div class="testimonial-quote">🌻</div>
+        <p class="testimonial-text">"Seeing neglected tasks wilt is a gentle, guilt-free reminder. It's never harsh — just nature doing its thing. I actually feel cared for."</p>
+        <div class="testimonial-author">
+          <div class="avatar" style="background:var(--clr-amber-lt); color:var(--clr-amber-dk);">AP</div>
+          <div>
+            <div style="font-weight:500;font-size:0.9rem;">Ananya P.</div>
+            <div style="font-size:0.8rem;color:var(--text-light);">Freelance Writer</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA Banner ── -->
+<section class="section">
+  <div class="container">
+    <div class="cta-banner">
+      <div class="tag tag--sage mb-3" style="display:inline-flex;">🌿 Ready to begin?</div>
+      <h2 class="display-md" style="color:var(--clr-cream); margin-bottom:1rem;">Plant your first seed today</h2>
+      <p style="color:rgba(253,250,245,0.75); max-width:480px; margin:0 auto 2rem; font-size:1.05rem;">
+        Join thousands of gardeners who've transformed their relationship with productivity. Your garden is waiting.
+      </p>
+      <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+        <a href="garden.html" class="btn btn--primary btn--lg" style="background:var(--clr-petal);">🌸 Open My Garden</a>
+        <a href="about.html" class="btn btn--secondary btn--lg" style="background:rgba(255,255,255,0.1); border-color:rgba(255,255,255,0.2); color:var(--clr-cream);">Learn more</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Footer ── -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div>
+        <div class="footer__logo">🌿 Decision Planner</div>
+        <p style="font-size:0.875rem; color:rgba(253,250,245,0.5); max-width:260px; line-height:1.65;">
+          Grow your productivity with context-aware task intelligence and beautiful garden visualizations.
+        </p>
+      </div>
+      <div>
+        <div class="footer__title">Navigate</div>
+        <a href="garden.html" class="footer__link">My Garden</a>
+        <a href="quick-tasks.html" class="footer__link">Quick Tasks</a>
+        <a href="projects.html" class="footer__link">Projects</a>
+        <a href="neglected.html" class="footer__link">Neglected</a>
+      </div>
+      <div>
+        <div class="footer__title">Features</div>
+        <a href="features.html" class="footer__link">Smart Filtering</a>
+        <a href="feature-detail1.html" class="footer__link">Garden Mode</a>
+        <a href="feature-detail2.html" class="footer__link">Context AI</a>
+      </div>
+      <div>
+        <div class="footer__title">Company</div>
+        <a href="about.html" class="footer__link">About</a>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <span>© 2025 Decision Planner. All rights reserved.</span>
+      <span>Made with 🌿 for focused minds</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Mobile nav
+  document.getElementById('hamburger').addEventListener('click', function() {
+    document.getElementById('navLinks').classList.toggle('open');
+  });
+
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  reveals.forEach(r => observer.observe(r));
+</script>
 </body>
 </html>
